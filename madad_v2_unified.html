@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مداد العربية AI | Education Operating System</title>
+<link href="https://fonts.googleapis.com/css2?family=Rakkas&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- مكتبة الجولة التعريفية Tour -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/introjs.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intro.js/7.2.0/intro.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<!-- Google API for Sheets export -->
+<script src="https://apis.google.com/js/api.js"></script>
+<style>
+  :root {
+    --bg-main: #F4F2EE; --sidebar-bg: #1A1D1C; --card-bg: #FFFFFF; --text-primary: #1F2321; --text-muted: #6B726E;
+    --gold: #C5A059; --gold-dark: #A7823B; --border-color: #E5DECD; --accent-sand: #FAF6EE; --sidebar-text: #D6D0C4;
+    --sidebar-hover: #2C302E; --success: #10B981; --danger: #EF4444;
+  }
+  [data-theme="dark"] {
+    --bg-main: #121514; --sidebar-bg: #0B0D0C; --card-bg: #1A1E1D; --text-primary: #F3F4F6; --text-muted: #9CA3AF;
+    --gold: #D4AF37; --gold-dark: #C5A059; --border-color: #2D3330; --accent-sand: #222725; --sidebar-text: #9CA3AF; --sidebar-hover: #252A28;
+  }
+  html, body { direction: rtl; text-align: right; background: var(--bg-main); color: var(--text-primary); font-family: 'IBM Plex Sans Arabic', sans-serif; margin: 0; padding: 0; transition: background 0.3s, color 0.3s; }
+
+  /* ===== شاشة الدخول والتسجيل ===== */
+  .login-gate { position:fixed; inset:0; z-index:5000; background: linear-gradient(135deg, #0A0E0C 0%, #111714 50%, #0C1410 100%); display:flex; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+  .login-gate::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse at 20% 50%, rgba(197,160,89,0.07) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(197,160,89,0.05) 0%, transparent 50%); pointer-events:none; }
+  .login-box { background: var(--card-bg); border:1px solid rgba(197,160,89,0.3); border-radius:28px; padding:40px 44px; width:100%; max-width:460px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(197,160,89,0.1); position:relative; }
+  .login-logo { font-family:'Rakkas',serif; font-size:28px; color:var(--gold); margin-bottom:3px; letter-spacing:0.5px; }
+  .login-tagline { font-size:11.5px; color:var(--text-muted); margin-bottom:26px; }
+  .auth-tabs { display:flex; background:var(--accent-sand); border:1px solid var(--border-color); border-radius:14px; padding:4px; gap:4px; margin-bottom:24px; }
+  .auth-tab { flex:1; background:transparent; border:none; color:var(--text-muted); padding:10px 16px; border-radius:10px; font-weight:700; font-size:13.5px; cursor:pointer; transition:0.25s; font-family:inherit; }
+  .auth-tab.active-auth-tab { background:var(--gold); color:#FFF; box-shadow:0 4px 14px rgba(197,160,89,0.35); }
+  .auth-field { text-align:right; margin-bottom:14px; }
+  .auth-field label { display:block; font-size:12.5px; font-weight:700; color:var(--text-muted); margin-bottom:6px; }
+  .auth-field input, .auth-field select { width:100%; background:var(--accent-sand); border:1.5px solid var(--border-color); color:var(--text-primary); padding:11px 15px; border-radius:12px; font-family:inherit; font-size:13.5px; box-sizing:border-box; text-align:right; transition:0.2s; }
+  .auth-field input:focus, .auth-field select:focus { outline:none; border-color:var(--gold); background:var(--card-bg); box-shadow:0 0 0 3px rgba(197,160,89,0.12); }
+  .auth-btn { width:100%; background:var(--gold); color:#1A1D1C; border:none; padding:13px 20px; border-radius:13px; font-weight:800; cursor:pointer; font-size:15px; transition:0.3s; font-family:inherit; box-shadow:0 4px 18px rgba(197,160,89,0.35); margin-top:4px; }
+  .auth-btn:hover { background:var(--gold-dark); box-shadow:0 6px 24px rgba(197,160,89,0.45); }
+  .auth-btn:disabled { opacity:0.6; cursor:not-allowed; }
+  .auth-social-btn { flex:1; background:var(--accent-sand); border:1.5px solid var(--border-color); padding:11px; border-radius:12px; font-size:13px; font-weight:700; cursor:pointer; color:var(--text-primary); display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s; font-family:inherit; }
+  .auth-social-btn:hover { border-color:var(--gold); background:rgba(197,160,89,0.07); }
+  .auth-divider { display:flex; align-items:center; gap:10px; color:var(--text-muted); font-size:12px; margin:16px 0; }
+  .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
+  .auth-error { background:#FEF2F2; border:1px solid #FCA5A5; color:#DC2626; border-radius:10px; padding:10px 14px; font-size:12.5px; font-weight:600; text-align:right; margin-top:12px; display:none; }
+  .auth-success { background:#F0FDF4; border:1px solid #86EFAC; color:#16A34A; border-radius:10px; padding:10px 14px; font-size:12.5px; font-weight:600; text-align:right; margin-top:12px; display:none; }
+  .auth-loading { display:none; text-align:center; color:var(--gold-dark); margin-top:10px; font-weight:700; font-size:13px; }
+  .auth-loading i { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .forgot-link { color:var(--gold-dark); text-decoration:none; font-size:12px; font-weight:600; cursor:pointer; }
+  .forgot-link:hover { text-decoration:underline; }
+  .auth-footer-note { font-size:11px; color:var(--text-muted); margin-top:18px; line-height:1.6; }
+  .firebase-notice { background: linear-gradient(135deg, #FFF3CD, #FFF8E1); border:1px solid #F59E0B; border-radius:12px; padding:14px 16px; margin-bottom:20px; text-align:right; }
+  .firebase-notice p { margin:0; font-size:12px; color:#92400E; font-weight:600; line-height:1.7; }
+  .firebase-notice a { color:#92400E; }
+
+  /* ===== التطبيق الرئيسي ===== */
+  #appContainer { display: none; min-height: 100vh; direction: rtl; }
+  #appContainer.app-visible { display:flex; }
+  .sidebar { width: 280px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; right: 0; z-index: 1000; box-shadow: -5px 0 25px rgba(0,0,0,0.1); }
+  .sidebar-header { padding: 25px 20px; font-family: 'Rakkas', serif; font-size: 22px; color: var(--gold); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 10px; }
+  .sidebar-header small { display:block; font-family:'IBM Plex Sans Arabic',sans-serif; font-size:10.5px; color:#8A9189; font-weight:400; }
+  .sidebar-menu { list-style: none; padding: 16px 15px; margin: 0; flex: 1; overflow-y: auto; }
+  .sidebar-menu li { margin-bottom: 6px; }
+  .sidebar-menu a { display: flex; align-items: center; gap: 12px; color: var(--sidebar-text); padding: 11px 16px; border-radius: 12px; text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; cursor: pointer; }
+  .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--gold); color: #FFF; box-shadow: 0 4px 15px rgba(197,160,89,0.3); }
+  .sidebar-footer { padding:16px 20px; font-size:11px; color:#7C837E; border-top:1px solid rgba(255,255,255,0.08); }
+  .main-wrapper { margin-right: 280px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+  .navbar { background: var(--card-bg); border-bottom: 1px solid var(--border-color); padding: 12px 35px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 900; gap:16px; flex-wrap:wrap; }
+  .search-bar { background: var(--accent-sand); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 10px; display: flex; align-items: center; gap: 10px; width: 280px; max-width:40vw; }
+  .search-bar input { background: transparent; border: none; color: var(--text-primary); outline: none; width: 100%; font-family: inherit; font-size: 14px; }
+  .navbar-right { display:flex; align-items:center; gap:10px; }
+  .nav-user-badge { display:flex; align-items:center; gap:9px; background:var(--accent-sand); border:1px solid var(--border-color); border-radius:12px; padding:7px 14px; }
+  .nav-user-avatar { width:32px; height:32px; border-radius:50%; background:var(--gold); color:#1A1D1C; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; font-family:'Rakkas',serif; flex-shrink:0; }
+  .nav-user-info { text-align:right; line-height:1.3; }
+  .nav-user-info .nav-user-name { font-size:12.5px; font-weight:700; color:var(--text-primary); }
+  .nav-user-info .nav-institute-name { font-size:10.5px; color:var(--text-muted); }
+  .theme-toggle-btn { background: var(--accent-sand); border: 1px solid var(--border-color); color: var(--text-primary); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; flex-shrink:0; }
+  .signout-btn { background:transparent; border:1.5px solid var(--border-color); color:var(--text-muted); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:0.3s; flex-shrink:0; font-size:14px; }
+  .signout-btn:hover { border-color:var(--danger); color:var(--danger); }
+  .content-body { padding: 35px; flex: 1; }
+  .page-panel { display: none; }
+  .page-panel.active-panel { display: block; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 28px; }
+  .stat-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 22px; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative; overflow: hidden; text-align:right; }
+  .stat-card::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 4px; background: var(--gold); }
+  .stat-card h4 { margin: 0 0 8px 0; color: var(--text-muted); font-size: 13px; font-weight: 600; }
+  .stat-card .number { font-size: 25px; font-weight: 700; color: var(--text-primary); font-family: 'Rakkas', serif; }
+  .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 25px; text-align:right; }
+  h2, h3, h4 { font-family: 'Rakkas', serif; color: var(--gold); margin-top: 0; text-align:right; }
+  .field { margin-bottom: 18px; text-align:right; }
+  label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13.5px; font-weight: 600; text-align:right; }
+  input, select, textarea { width: 100%; background: var(--accent-sand); border: 1px solid var(--border-color); color: var(--text-primary); padding: 12px 16px; border-radius: 12px; font-family: inherit; font-size: 14px; box-sizing: border-box; text-align:right; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--gold); background: var(--card-bg); }
+  .primary-btn, button.primary-btn { background: var(--gold); color: #FFF; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14.5px; transition: 0.3s; box-shadow: 0 4px 15px rgba(197,160,89,0.3); display: inline-flex; align-items: center; gap: 8px; }
+  .primary-btn:hover, button.primary-btn:hover { background: var(--gold-dark); }
+  .ai-action-btn { background: #7B1FA2; color: #FFF; padding: 8px 16px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.3s; display: inline-flex; align-items: center; gap: 6px; }
+  .supervision-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13.5px; text-align: right; }
+  .supervision-table th, .supervision-table td { border: 1px solid var(--border-color); padding: 12px 15px; }
+  .supervision-table th { background: var(--accent-sand); color: var(--text-muted); font-weight: 700; }
+  .text-center { text-align: center !important; }
+  .editable-cell { background: var(--accent-sand); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 10px; width: 100%; font-family: inherit; font-size: 14px; color: var(--text-primary); box-sizing: border-box; }
+  .editable-cell:focus { background: var(--card-bg); border-color: var(--gold); outline: none; }
+  .ai-advisor-box, .ai-assistant-widget { background: linear-gradient(135deg, var(--card-bg) 0%, var(--accent-sand) 100%); border: 2px solid var(--gold); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 6px 20px rgba(197,160,89,0.1); text-align:right; }
+  .ai-assistant-widget h3 { display:flex; align-items:center; gap:10px; font-size:20px; }
+  .output { margin-top: 20px; padding: 20px; background: var(--accent-sand); border: 1px solid var(--border-color); border-radius: 12px; white-space: pre-wrap; display: none; line-height: 1.9; font-size: 14px; color: var(--text-primary); text-align:right; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .mega-assistant { background: linear-gradient(135deg, var(--sidebar-bg) 0%, #2C302E 100%); color:#F3F1EA; border-radius:22px; padding:30px; margin-bottom:28px; border:2px solid var(--gold); }
+  .mega-assistant h3 { color:var(--gold); font-size:22px; margin-bottom:6px; }
+  .mega-assistant p { color:#C9C3B6; font-size:13.5px; margin-bottom:16px; }
+  .mega-ask-row { display:flex; gap:10px; flex-wrap:wrap; }
+  .mega-ask-row input { flex:1; min-width:220px; background:rgba(255,255,255,0.06); border:1px solid rgba(197,160,89,0.35); color:#F3F1EA; }
+  .quick-suggest-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .quick-suggest-chip { background:rgba(255,255,255,0.07); border:1px solid rgba(197,160,89,0.4); color:#D6D0C4; padding:6px 12px; border-radius:20px; font-size:12px; cursor:pointer; }
+  .quick-suggest-chip:hover { background:var(--gold); color:#FFF; }
+  .mega-assistant .output { background:rgba(255,255,255,0.06); border-color:rgba(197,160,89,0.3); color:#F3F1EA; }
+  .alerts-list { display:flex; flex-direction:column; gap:10px; }
+  .alert-row { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; border-radius:12px; font-size:13.5px; gap:10px; flex-wrap:wrap; }
+  .alert-row.warn { background:#FBEAE9; color:#B3261E; border:1px solid #F3CFCC; }
+  .alert-row.info { background:#EAF1F8; color:#1F4E79; border:1px solid #C9DCEC; }
+  .alert-row.success { background:#E8F8F5; color:#145A32; border:1px solid #C6EAD9; }
+  [data-theme="dark"] .alert-row.warn { background:#3A2323; }
+  [data-theme="dark"] .alert-row.info { background:#1E2A33; }
+  [data-theme="dark"] .alert-row.success { background:#1B2E27; }
+  .alert-row button { background:#FFF; border:1px solid currentColor; color:inherit; padding:5px 12px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; }
+  .quick-portal-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
+  .quick-portal-card { cursor:pointer; }
+  .role-tabs { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  .role-btn { background:var(--accent-sand); border:2px solid var(--border-color); color:var(--text-muted); padding:9px 18px; border-radius:12px; font-weight:700; cursor:pointer; font-size:13.5px; transition:0.3s; }
+  .role-btn.active-role { background:var(--gold); color:#FFF; border-color:var(--gold); box-shadow:0 4px 15px rgba(197,160,89,0.3); }
+  .motivation-box { background:var(--accent-sand); border:1px solid var(--border-color); padding:18px; border-radius:12px; margin-bottom:20px; }
+  .status-select { padding:6px 10px; border-radius:6px; font-weight:700; font-size:12.5px; cursor:pointer; border:1px solid var(--border-color); }
+  .status-done { background:#E8F8F5; color:#27AE60; border-color:#A2D9CE; }
+  .status-review { background:#EBF5FB; color:#2980B9; border-color:#AED6F1; }
+  .status-pending { background:var(--accent-sand); color:var(--text-muted); border-color:var(--border-color); }
+  .progress-container { background:var(--border-color); border-radius:10px; height:20px; width:100%; margin:10px 0; overflow:hidden; }
+  .progress-bar { background:linear-gradient(90deg, var(--gold), #27AE60); height:100%; width:0%; text-align:center; color:#FFF; font-size:11px; font-weight:700; line-height:20px; }
+  .student-card-quran { background:var(--card-bg); border:2px solid var(--gold); border-radius:16px; padding:22px; margin-bottom:20px; }
+  .mode-toggle { display:inline-flex; background:var(--accent-sand); border:1px solid var(--border-color); border-radius:12px; padding:4px; gap:4px; margin-bottom:18px; }
+  .mode-btn { border:none; background:transparent; color:var(--text-muted); padding:9px 18px; border-radius:9px; font-weight:700; font-size:13px; cursor:pointer; transition:0.2s; }
+  .mode-btn.active-mode { background:var(--gold); color:#FFF; }
+  tr.student-main-row-track { border-top:2px solid var(--gold); background:var(--card-bg); }
+  tr.student-sub-row-track { border-bottom:2px solid var(--gold); background:var(--accent-sand); }
+  tr.completed-target-row, tr.completed-target-row > td { background-color:#E8F8F5 !important; border-color:#A2D9CE !important; color:#145A32 !important; }
+  tr.completed-target-row input, tr.completed-target-row select, tr.completed-target-row textarea { background-color:#D4EFDF !important; color:#145A32 !important; border-color:#A2D9CE !important; }
+  .session-cell-track { background:var(--accent-sand); text-align:center; padding:8px !important; }
+  .session-cell-track input, .session-cell-track select { font-size:11px; margin-bottom:4px; padding:5px; }
+  .target-input-track { font-weight:700; text-align:center; color:var(--gold-dark); background:var(--accent-sand) !important; }
+  .training-tabs { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; border-bottom:1px solid var(--border-color); }
+  .training-tab-btn { background:transparent; border:none; border-bottom:3px solid transparent; color:var(--text-muted); padding:12px 16px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:0.2s; }
+  .training-tab-btn:hover { color:var(--gold-dark); }
+  .training-tab-btn.active-training-tab { border-bottom-color:var(--gold); color:var(--gold-dark); }
+  .training-panel-content { display:none; }
+  .training-panel-content.active-training-panel { display:block; }
+  .path-card { border:1px solid var(--border-color); border-radius:16px; padding:20px; background:var(--accent-sand); display:flex; flex-direction:column; justify-content:space-between; gap:14px; transition:0.25s; }
+  .path-card:hover { border-color:var(--gold); }
+  .path-badge { font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px; background:var(--card-bg); color:var(--gold-dark); border:1px solid var(--border-color); }
+  .path-hours { font-size:12px; color:var(--text-muted); font-weight:600; }
+  .path-card h4 { font-family:'IBM Plex Sans Arabic'; font-size:15.5px; color:var(--text-primary); margin:0; }
+  .path-card p { font-size:12.5px; color:var(--text-muted); line-height:1.8; margin:0; }
+  .path-footer { display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--border-color); font-size:12px; color:var(--text-muted); }
+  .resource-card { border:1px solid var(--border-color); border-radius:14px; padding:18px; background:var(--accent-sand); display:flex; flex-direction:column; justify-content:space-between; gap:12px; }
+  .resource-icon { width:42px; height:42px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:17px; background:var(--card-bg); border:1px solid var(--border-color); color:var(--gold-dark); }
+  .resource-card h4 { font-family:'IBM Plex Sans Arabic'; font-size:13.5px; color:var(--text-primary); margin:0; }
+  .resource-card p { font-size:11.5px; color:var(--text-muted); line-height:1.7; margin:0; }
+  .resource-footer { display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px dashed var(--border-color); font-size:11.5px; }
+  .before-after-box { background:var(--accent-sand); border:1px solid var(--border-color); border-radius:14px; padding:18px; display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:14px; }
+  .before-after-box .ba-item span { font-size:11.5px; font-weight:700; color:var(--gold-dark); display:block; margin-bottom:4px; }
+  .before-after-box .ba-item h4 { font-size:19px; margin:0; color:var(--text-primary); }
+  /* Toast notification */
+  .madad-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--sidebar-bg); color:#F3EEDD; padding:13px 24px; border-radius:14px; font-size:13.5px; font-weight:600; z-index:9999; border:1px solid rgba(197,160,89,0.4); box-shadow:0 8px 30px rgba(0,0,0,0.35); transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s; opacity:0; pointer-events:none; white-space:nowrap; max-width:90vw; }
+  .madad-toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+  @media (max-width: 960px) { .sidebar { width: 240px; } .main-wrapper { margin-right: 240px; } .content-body { padding: 20px; } }
+  @media (max-width: 680px) { .sidebar { transform:translateX(100%); transition:transform 0.3s; } .sidebar.mobile-open { transform:translateX(0); } .main-wrapper { margin-right:0; } .hamburger-btn { display:flex !important; } .search-bar { display:none; } }
+  .hamburger-btn { display:none; background:var(--accent-sand); border:1px solid var(--border-color); color:var(--text-primary); width:38px; height:38px; border-radius:10px; align-items:center; justify-content:center; cursor:pointer; }
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
+  .sidebar-overlay.active { display:block; }
+  /* ... (باقي الأكواد القديمة الموجودة في الـ style) ... */
+  .hamburger-btn { display:none; background:var(--accent-sand); border:1px solid var(--border-color); color:var(--text-primary); width:38px; height:38px; border-radius:10px; align-items:center; justify-content:center; cursor:pointer; }
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
+  .sidebar-overlay.active { display:block; }
+
+  /* ===== ضع كود جداول المتابعة للشاشات الصغيرة هنا بعد السطر السابق مباشرة ===== */
+  @media (max-width: 768px) {
+    .supervision-table, 
+    .supervision-table thead, 
+    .supervision-table tbody, 
+    .supervision-table th, 
+    .supervision-table td, 
+    .supervision-table tr {
+      display: block;
+      width: 100%;
+    }
+    
+    .supervision-table thead {
+      display: none;
+    }
+    
+    .supervision-table tr {
+      margin-bottom: 16px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    }
+    
+    .supervision-table td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border-color);
+      text-align: left;
+    }
+    
+    .supervision-table td:last-child {
+      border-bottom: none;
+    }
+    
+    .session-cell-track {
+      background: var(--accent-sand);
+      border-radius: 8px;
+      margin: 4px 0;
+      padding: 8px !important;
+    }
+  }
+  /* ========================================================================= */
+/* ... (نهاية التنسيقات القديمة الموجودة في الملف) ... */
+  .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:999; }
+  .sidebar-overlay.active { display:block; }
+
+  /* ===== ضع كود التنبيهات المرئية هنا في نهاية الـ style ===== */
+  .madad-toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--sidebar-bg);
+    color: #F3EEDD;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    z-index: 99999;
+    border: 1px solid rgba(197,160,89,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90vw;
+    text-align: right;
+  }
+  .madad-toast-container.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .madad-toast-container.success { border-color: var(--success); }
+  .madad-toast-container.error { border-color: var(--danger); }
+  .madad-toast-container.warn { border-color: #F59E0B; }
+  /* ======================================================== */
+.madad-toast-container.success { border-color: var(--success); }
+.madad-toast-container.error { border-color: var(--danger); }
+.madad-toast-container.warn { border-color: #F59E0B; }
+
+  /* كود التنبيهات المرئية هنا */
+  .madad-toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--sidebar-bg);
+    color: #F3EEDD;
+    padding: 14px 22px;
+    border-radius: 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    z-index: 99999;
+    border: 1px solid rgba(197,160,89,0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90vw;
+    text-align: right;
+  }
+  .madad-toast-container.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+</style>
+</style> <!-- نهاية وسْم الاستايل -->
+
+</head>
+<body data-theme="light">
+<!-- ===== شاشة الدخول والتسجيل الحقيقي ===== -->
+<div class="login-gate" id="loginGate">
+  <div class="login-box">
+    <div class="login-logo">🏛️ مداد العربية AI</div>
+    <div class="login-tagline">The Intelligent Operating System for Arabic Education</div>
+
+    <div id="firebaseNotice" class="firebase-notice" style="display:none;">
+      <p>⚠️ <b>لإدارة المشروع:</b> أضف إعدادات Firebase في متغيرات البيئة على Vercel.<br>
+      راجع ملف <b>FIREBASE_SETUP.md</b> المرفق للتعليمات الكاملة.</p>
+    </div>
+
+    <!-- تبويبات الدخول / التسجيل -->
+    <div class="auth-tabs">
+      <button class="auth-tab active-auth-tab" id="loginTab" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+      <button class="auth-tab" id="registerTab" onclick="switchAuthTab('register')">حساب جديد مجاناً ✨</button>
+    </div>
+
+    <!-- نموذج تسجيل الدخول -->
+    <div id="loginFormSection">
+      <div class="auth-field"><label>البريد الإلكتروني</label><input type="email" id="loginEmail" placeholder="name@institute.com" autocomplete="email"></div>
+      <div class="auth-field"><label>كلمة المرور</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+      <div style="text-align:left; margin-bottom:16px;">
+        <span class="forgot-link" onclick="resetPassword()">نسيت كلمة المرور؟</span>
+      </div>
+      <button class="auth-btn" id="loginBtn" onclick="loginUser()">🔐 تسجيل الدخول</button>
+      <div id="loginError" class="auth-error"></div>
+      <div id="loginSuccess" class="auth-success"></div>
+    </div>
+
+    <!-- نموذج إنشاء حساب جديد -->
+    <div id="registerFormSection" style="display:none;">
+      <div class="auth-field"><label>الاسم الكامل</label><input type="text" id="regName" placeholder="الاسم الكامل" autocomplete="name"></div>
+      <div class="auth-field"><label>اسم مؤسستك / معهدك</label><input type="text" id="regInstitute" placeholder="مثال: معهد الفرقان للعربية"></div>
+      <div class="auth-field"><label>دورك في المؤسسة</label>
+        <select id="regRole">
+          <option value="admin">مدير المعهد / المؤسسة</option>
+          <option value="supervisor">مشرف تربوي</option>
+          <option value="teacher">معلم</option>
+          <option value="student">طالب</option>
+          <option value="parent">ولي أمر</option>
+        </select>
+      </div>
+      <div class="auth-field"><label>البريد الإلكتروني</label><input type="email" id="regEmail" placeholder="name@institute.com" autocomplete="email"></div>
+      <div class="auth-field"><label>كلمة المرور (8 أحرف على الأقل)</label><input type="password" id="regPassword" placeholder="••••••••" autocomplete="new-password"></div>
+      <div class="auth-field"><label>تأكيد كلمة المرور</label><input type="password" id="regConfirm" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password"></div>
+      <button class="auth-btn" id="registerBtn" onclick="registerUser()">✨ إنشاء الحساب مجاناً</button>
+      <div id="registerError" class="auth-error"></div>
+      <div id="registerSuccess" class="auth-success"></div>
+    </div>
+
+    <!-- الدخول عبر Google -->
+    <div class="auth-divider">أو الدخول السريع عبر</div>
+    <div style="display:flex; gap:10px; flex-direction:column;">
+      <button class="auth-social-btn" onclick="loginWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
+        تسجيل الدخول بـ Google
+      </button>
+      <button class="auth-social-btn" onclick="loginAsGuest()" style="background:rgba(107,114,110,0.08); border-style:dashed;">
+        <i class="fa-solid fa-user-secret" style="color:var(--text-muted);"></i>
+        <span>دخول كزائر <small style="font-weight:400; font-size:11px;">(البيانات مؤقتة)</small></span>
+      </button>
+    </div>
+
+    <div class="auth-loading" id="authLoading"><i class="fa-solid fa-spinner"></i> &nbsp;جارٍ المعالجة...</div>
+    <p class="auth-footer-note">التسجيل مجاني تماماً. لا تتطلب بطاقة ائتمانية.<br>بالتسجيل توافق على سياسة الخصوصية وشروط الاستخدام.</p>
+  </div>
+</div>
+
+<div id="appContainer">
+  <aside class="sidebar">
+    <div class="sidebar-header"><span>🏛️</span><div>مداد العربية AI<small>Education Operating System</small></div></div>
+    <ul class="sidebar-menu">
+      <li><a href="#" class="active" onclick="switchPanel('dashboardPanel', this)"><i class="fa-solid fa-chart-pie"></i> لوحة المؤشرات (Dashboard)</a></li>
+      <li><a href="#" onclick="switchPanel('studentPanel', this)"><i class="fa-solid fa-graduation-cap"></i> بوابة الطالب (Student OS)</a></li>
+      <li><a href="#" onclick="switchPanel('teacherPanel', this)"><i class="fa-solid fa-chalkboard-user"></i> بوابة المعلم (Teacher Hub)</a></li>
+      <li><a href="#" onclick="switchPanel('quranPanel', this)"><i class="fa-solid fa-book-quran"></i> قسم القرآن الكريم</a></li>
+      <li><a href="#" onclick="switchPanel('supervisorPanel', this)"><i class="fa-solid fa-user-shield"></i> بوابة الإشراف والتقييم</a></li>
+      <li><a href="#" onclick="switchPanel('managementPanel', this)"><i class="fa-solid fa-building-columns"></i> الإدارة والمالية (ERP/CRM)</a></li>
+      <li><a href="#" onclick="switchPanel('curriculumPanel', this)"><i class="fa-solid fa-book-open"></i> استوديو المناهج</a></li>
+      <li><a href="#" onclick="switchPanel('communicationPanel', this)"><i class="fa-solid fa-bullhorn"></i> بوابة التواصل</a></li>
+      <li><a href="#" onclick="switchPanel('reportsPanel', this)"><i class="fa-solid fa-chart-line"></i> التقارير المتقدمة والذكاء</a></li>
+      <li><a href="#" onclick="switchPanel('trainingPanel', this)"><i class="fa-solid fa-person-chalkboard"></i> التدريب والتطوير المهني</a></li>
+    </ul>
+    <div class="sidebar-footer">مداد العربية AI © الإصدار الثاني (V2)<br>نواة موحّدة لكل بوابات المؤسسة</div>
+  </aside>
+
+  <!-- طبقة تعتيم للشاشات الصغيرة -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileSidebar()"></div>
+
+  <div class="main-wrapper">
+    <header class="navbar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileSidebar()" title="القائمة">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="search-bar"><i class="fa-solid fa-search" style="color:var(--text-muted);"></i><input type="text" placeholder="ابحث في كل النظام..."></div>
+      </div>
+      <div class="navbar-right">
+        <div class="nav-user-badge">
+          <div class="nav-user-avatar" id="navUserAvatar">م</div>
+          <div class="nav-user-info">
+            <div class="nav-user-name" id="navUserName">مستخدم</div>
+            <div class="nav-institute-name" id="navInstituteName">مداد العربية AI</div>
+          </div>
+        </div>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" title="تغيير الوضع"><i class="fa-solid fa-moon" id="themeIcon"></i></button>
+        <button class="theme-toggle-btn" onclick="exportAllToGoogleSheets()" title="تصدير كل البيانات إلى Google Sheets / CSV" style="background:rgba(52,168,83,0.12); border-color:rgba(52,168,83,0.3); color:#137333;" id="sheetsExportBtn">
+          <i class="fa-brands fa-google-drive"></i>
+        </button>
+        <button class="theme-toggle-btn" onclick="saveToFirestore(currentUser?.uid)" title="حفظ الآن في السحابة" style="background:rgba(66,133,244,0.12); border-color:rgba(66,133,244,0.3); color:#1a73e8;" id="cloudSaveBtn">
+          <button class="theme-toggle-btn" onclick="startOnboardingTour()" title="جولة تعريفية بالمنصة" style="background:rgba(197,160,89,0.12); border-color:var(--gold); color:var(--gold-dark);">
+  <i class="fa-solid fa-compass"></i>
+</button>
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+        </button>
+        <button class="signout-btn" onclick="signOutUser()" title="تسجيل الخروج"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </header>
+
+    <div class="content-body">
+
+      <div id="dashboardPanel" class="page-panel active-panel">
+        <div class="mega-assistant">
+          <h3>🤖 اسأل مداد — المحرك الذكي المركزي (Madad Intelligence Engine)</h3>
+          <p>اكتب سؤالك الإداري أو الأكاديمي بلغة طبيعية، وسيحلل مداد بيانات المؤسسة ليجيبك بالأسباب والحلول.</p>
+          <div class="mega-ask-row"><input type="text" id="dashboardAiQuery" placeholder="مثال: لماذا انخفض مستوى الصف الثالث هذا الشهر؟"><button class="primary-btn" onclick="askMadadAI()"><span>✨</span> اسأل مداد</button></div>
+          <div class="quick-suggest-row">
+            <span class="quick-suggest-chip" onclick="askMadadAI('لماذا انخفض مستوى الصف الثالث؟')">لماذا انخفض مستوى الصف الثالث؟</span>
+            <span class="quick-suggest-chip" onclick="askMadadAI('من أفضل 3 معلمين هذا الشهر؟')">أفضل 3 معلمين هذا الشهر؟</span>
+            <span class="quick-suggest-chip" onclick="askMadadAI('توقع إيرادات الشهر القادم')">توقع إيرادات الشهر القادم</span>
+            <span class="quick-suggest-chip" onclick="askMadadAI('ما نسبة الطلاب المعرضين للانقطاع؟')">الطلاب المعرضون للانقطاع؟</span>
+          </div>
+          <div id="dashboardAiOutput" class="output"></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><h4>المؤسسات</h4><div class="number">14 معهد</div></div>
+          <div class="stat-card"><h4>المعلمون</h4><div class="number">128 معلماً</div></div>
+          <div class="stat-card"><h4>الطلاب</h4><div class="number">1,450 طالباً</div></div>
+          <div class="stat-card"><h4>حصص اليوم</h4><div class="number">94 حصة</div></div>
+          <div class="stat-card"><h4>معدل حضور الطلاب</h4><div class="number" style="color:var(--success);">96.4%</div></div>
+          <div class="stat-card"><h4>رضا أولياء الأمور</h4><div class="number" style="color:var(--gold);">4.7 / 5</div></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:19px; margin-bottom:14px;">🔔 التنبيهات المهمة اليوم</h3>
+          <div class="alerts-list">
+            <div class="alert-row warn"><span>⛔ 5 طلاب تجاوزوا موعد تجديد الاشتراك بأكثر من 3 أيام.</span><button onclick="switchPanel('managementPanel', document.querySelectorAll('.sidebar-menu a')[5])">فتح الإدارة والمالية</button></div>
+            <div class="alert-row info"><span>📚 المستوى الثاني (اللغة العربية) بحاجة لمراجعة منهجية بعد انخفاض نتائج الاختبار الشهري.</span><button onclick="switchPanel('curriculumPanel', document.querySelectorAll('.sidebar-menu a')[6])">فتح استوديو المناهج</button></div>
+            <div class="alert-row success"><span>⭐ الأستاذ أحمد محمد حقق أعلى معدل رضا طلاب هذا الشهر (4.9/5).</span><button onclick="switchPanel('supervisorPanel', document.querySelectorAll('.sidebar-menu a')[4])">فتح الإشراف</button></div>
+          </div>
+        </div>
+        <h3 style="font-size:19px; margin:0 0 14px;">وصول سريع للبوابات</h3>
+        <div class="quick-portal-grid">
+          <div class="stat-card quick-portal-card" onclick="switchPanel('studentPanel', document.querySelectorAll('.sidebar-menu a')[1])"><h4>بوابة الطالب</h4><div class="number" style="font-size:16px; color:var(--gold);">Student OS</div></div>
+          <div class="stat-card quick-portal-card" onclick="switchPanel('teacherPanel', document.querySelectorAll('.sidebar-menu a')[2])"><h4>بوابة المعلم</h4><div class="number" style="font-size:16px; color:var(--gold);">Teacher Hub</div></div>
+          <div class="stat-card quick-portal-card" onclick="switchPanel('curriculumPanel', document.querySelectorAll('.sidebar-menu a')[6])"><h4>استوديو المناهج</h4><div class="number" style="font-size:16px; color:var(--gold);">Curriculum Studio</div></div>
+          <div class="stat-card quick-portal-card" onclick="switchPanel('trainingPanel', document.querySelectorAll('.sidebar-menu a')[9])"><h4>التدريب والتطوير المهني</h4><div class="number" style="font-size:16px; color:var(--gold);">Training Hub</div></div>
+        </div>
+      </div>
+
+      <div id="studentPanel" class="page-panel">
+        <div class="card">
+          <h2>🎓 بوابة الطالب الذكية والمساعدة الشخصية (Student OS)</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">منصتك التعليمية الخاصة لمتابعة الخطة الدراسية، إنجاز الواجبات التفاعلية، وتطوير مهاراتك اللغوية بمساعدة الذكاء الاصطناعي.</p>
+          <div class="stats-grid" style="margin-bottom:25px;">
+            <div class="stat-card"><h4>المستوى الحالي</h4><div class="number" style="font-size:20px; color:var(--gold);">المستوى الأول (الوحدة 3)</div></div>
+            <div class="stat-card"><h4>نسبة الإنجاز</h4><div class="number" style="color:var(--success);">78%</div></div>
+            <div class="stat-card"><h4>نقاط التحفيز</h4><div class="number" style="color:var(--gold);">1,250 ⭐</div></div>
+            <div class="stat-card"><h4>حالة الحضور</h4><div class="number" style="color:var(--success);">100%</div></div>
+          </div>
+          <div class="ai-assistant-widget" style="margin-bottom:25px;">
+            <h3><span>🤖</span> مساعد مداد العربية AI (المعلم الشخصي للطالب)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:15px;">اختر نوع المساعدة التي تحتاجها الآن:</p>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="studentAiAction('شرح الدرس')"><span>📖</span> شرح الدرس الحالي</button>
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="studentAiAction('تصحيح النطق')"><span>🎙️</span> التدريب وتصحيح النطق</button>
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="studentAiAction('تدريب محادثة')"><span>💬</span> المحادثة التفاعلية</button>
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#7B1FA2;" onclick="studentAiAction('اختبار فوري')"><span>⚡</span> اختبار فوري قصير</button>
+            </div>
+            <div class="field" style="margin-bottom:12px;"><input type="text" id="studentPersonalQuery" placeholder="أو اكتب سؤالك المباشر لمساعد مداد..."></div>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px;" onclick="runStudentPersonalAi()"><span>✨</span> إرسال للمساعد الذكي</button>
+            <div id="studentPersonalAiOutput" class="output"></div>
+          </div>
+          <div class="grid-2" style="margin-bottom:25px;">
+            <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+              <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:12px;">📊 لوحة تحليل المهارات (Skill Radar)</h3>
+              <ul style="font-size:13.5px; padding-right:20px; margin:0; line-height:2.1; color:var(--text-primary);">
+                <li><b>الاستماع (Listening):</b> 85% (ممتاز)</li><li><b>المحادثة (Speaking):</b> 75% (جيد جداً)</li><li><b>القراءة (Reading):</b> 90% (متقدم)</li><li><b>الكتابة (Writing):</b> 70% (يحتاج تدريب)</li><li><b>القواعد والمفردات:</b> 80%</li>
+              </ul>
+            </div>
+            <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+              <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:12px;">📋 الواجبات التفاعلية النشطة</h3>
+              <div style="background:var(--card-bg); border:1px solid var(--border-color); padding:20px; border-radius:14px;">
+                <p style="margin:0 0 8px 0; font-weight:600; font-size:14.5px;">تمرين تكوين الجمل الاسمية (12 سؤالاً)</p>
+                <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="alert('🚀 تم فتح الواجب التفاعلي!')">✏️ ابدأ حل الواجب الآن</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="teacherPanel" class="page-panel">
+        <div class="card">
+          <h2>👨‍🏫 بوابة المعلم ومساعد التدريس الذكي (Teacher Hub)</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">مركز القيادة الخاص بك لإدارة الحصص اليومية، توليد الدروس الفورية، ومتابعة تطور وتحليلات الطلاب.</p>
+          <div class="stats-grid" style="margin-bottom:25px;">
+            <div class="stat-card"><h4>حصص اليوم</h4><div class="number" style="font-size:22px; color:var(--gold);">5 حصص أونلاين</div></div>
+            <div class="stat-card"><h4>الطلاب المتميزون</h4><div class="number" style="color:var(--success);">12 طالباً</div></div>
+            <div class="stat-card"><h4>بحاجة لمتابعة</h4><div class="number" style="color:var(--danger);">2 طلاب</div></div>
+            <div class="stat-card"><h4>واجبات قيد التصحيح</h4><div class="number" style="color:var(--gold);">8 واجبات</div></div>
+          </div>
+          <div class="ai-assistant-widget" style="margin-bottom:25px;">
+            <h3><span>🤖</span> مساعد المعلم الذكي (توليد خطط الدروس والواجبات فوراً)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:15px;">أدخل متطلبات الدرس وسيقوم مداد بتوليد الخطة، الأنشطة، والواجب (12 سؤالاً) خلال ثوانٍ:</p>
+            <div class="grid-2" style="margin-bottom:12px;">
+              <div class="field" style="margin-bottom:0;"><label>موضوع الدرس والمدة:</label><input type="text" id="aiLessonPromptInput" value="أعدد درساً للمبتدئين لمدة 45 دقيقة عن التحية وتعارف العائلات"></div>
+              <div class="field" style="margin-bottom:0; display:flex; align-items:flex-end;"><button class="primary-btn" onclick="runTeacherAiLessonGenerator()"><span>✨</span> توليد الدرس والواجب كاملاً</button></div>
+            </div>
+            <div id="teacherAiLessonOutput" class="output"></div>
+          </div>
+          <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">👥 جدول ومتابعة الطلاب الخاصة بك</h3>
+            <div style="background:var(--card-bg); border:1px solid var(--border-color); padding:20px; border-radius:14px; margin-bottom:15px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <h4 style="margin:0; color:var(--text-primary); font-size:16px;">👤 الطالب: أحمد جونسون (لغة عربية غير عرب)</h4>
+                <button class="ai-action-btn" onclick="alert('🤖 تم توليد الواجب الذكي (12 سؤالاً) وإرساله للطالب عبر البريد والواتساب!')"><span>🤖</span> توليد وإرسال واجب (12 سؤالاً)</button>
+              </div>
+              <div class="grid-2" style="font-size:13.5px; color:var(--text-muted); line-height:1.9; margin-bottom:15px; background:var(--accent-sand); padding:15px; border-radius:10px;">
+                <div>• <b>آخر حضور:</b> أمس (بانتظام)<br>• <b>آخر واجب:</b> مُسلّم ومصحح (95%)<br>• <b>نسبة التقدم:</b> 80%</div>
+                <div>• <b style="color:var(--success);">الحالة النفسية (AI):</b> مستقر ومتحمس للتعلم<br>• <b style="color:var(--success);">احتمال الانسحاب:</b> منخفض جداً (0.5%)<br>• <b>اقتراح التعامل:</b> تحفيز إضافي بكلمات إيجابية</div>
+              </div>
+              <div class="field" style="margin-bottom:0;">
+                <label>📌 مكان التوقف الحالي (عند الانتهاء اكتبه هنا ليتم تحديث لوحة الإدارة والمشرف تلقائياً):</label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;"><input type="text" id="teacherStopPointInput" class="editable-cell" value="الكتاب الأول - الوحدة 3 (الحوار الثاني)" style="flex:1;"><button class="primary-btn" style="padding:10px 20px; font-size:13px;" onclick="alert('✅ تم تحديث مكان التوقف ومزامنة السجل الدراسي للطالب تلقائياً!')"><span>💾</span> حفظ ونشر</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:10px;">
+            <h3 style="font-size:18px; margin:0;">👥 جدول متابعة حصص طلابي التفصيلي</h3>
+            <button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#137333;" onclick="switchPanel('curriculumPanel', document.querySelectorAll('.sidebar-menu a')[6])"><span>📘</span> فتح استوديو المناهج وتخطيطه</button>
+          </div>
+          <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:16px;">عدد الحصص المستهدف شهريًا وتاريخ كل حصة وحالتها — يعمل تلقائيًا بنفس نظام الإشراف، ويتحول لونها للأخضر عند اكتمال العدد المستهدف.</p>
+          <div style="overflow-x:auto;"><table class="supervision-table" id="teacherTrackingTable"><thead><tr id="teacherTrackingHead"></tr></thead><tbody id="teacherTrackingBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <div id="quranPanel" class="page-panel">
+        <div class="card">
+          <h2>📖 قسم القرآن الكريم وتجويده المتدرج</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">منظومة آلية متكاملة لمتابعة حفظ سور القرآن الـ 114 وفق خطط متدرجة، مستقلة بحلقاتها ومعلميها عن بقية أقسام المنصة.</p>
+          <div class="motivation-box"><h4 style="color:var(--gold-dark); margin-top:0; font-size:16px;">✨ إشراقة إيمانية وحوافز أهل القرآن</h4><p id="dailyMotivation" style="font-size:14px; margin-bottom:0; font-weight:600;"></p></div>
+        </div>
+        <div class="card">
+          <h3 style="font-size:18px; margin-bottom:6px;">🔐 إدارة صلاحيات الحلقات (المعلمون والإشراف)</h3>
+          <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:14px;">اختر دورك لتصفح حلقتك الخاصة أو لوحة الإشراف الشاملة على كل الحلقات:</p>
+          <div class="role-tabs" id="quranRoleTabsContainer"></div>
+          <button type="button" class="primary-btn quran-supervisor-only" style="padding:8px 16px; font-size:13px; background:#2980B9; display:none;" onclick="addNewQuranTeacherModal()"><span>➕</span> إضافة معلم حلقة جديد</button>
+        </div>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div><h3 id="quranTeachersStudentsTitle" style="margin-bottom:4px;">👨‍🏫 إدارة المعلمين وطلاب حلقتهم</h3><p style="font-size:13px; color:var(--text-muted); margin:0;">استعراض المعلم والطلاب التابعين لحلقته:</p></div>
+            <button type="button" class="primary-btn quran-supervisor-only" style="padding:8px 16px; font-size:13px; display:none;" onclick="addNewQuranStudent()"><span>➕</span> إضافة طالب حافظ جديد</button>
+          </div>
+          <div style="overflow-x:auto;"><table class="supervision-table" id="quranTeachersStudentsTable"><thead><tr><th>اسم المعلم المسؤول</th><th>اسم الطالب الحافظ</th><th>البريد الإلكتروني</th><th class="quran-supervisor-only" style="display:none;">إجراءات</th></tr></thead><tbody id="quranTeachersStudentsBody"></tbody></table></div>
+        </div>
+        <div class="card" style="background:var(--accent-sand);">
+          <h3 style="font-size:18px; margin-bottom:6px;">🎓 البوابة المستقلة للطلاب (الملف الفردي التام لكل طالب)</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">لكل طالب ملفه المستقل: حفظه الجديد، أين توقف في المراجعة، تقديراته، نسبة إنجازه، وجدوله الخاص للـ114 سورة.</p>
+          <div id="quranIndependentStudentContainer"></div>
+        </div>
+        <div class="card quran-supervisor-section" id="quranSupervisorEvaluationSection" style="display:none;">
+          <h3 style="font-size:18px; margin-bottom:6px;">👔 تقرير المرور الإشرافي على حلقات التحفيظ (للمشرف العام حصرياً)</h3>
+          <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:18px;">تقييم أداء معلمي التحفيظ وضبط الحلقات وإرسال التوصيات مباشرة لبريد المعلم.</p>
+          <div class="grid-2">
+            <div class="field"><label>المعلم المستهدف بالإشراف</label><select id="quranSupervisorTeacherSelect" onchange="updateTeacherEmailQuran()"></select></div>
+            <div class="field"><label>بريد المعلم</label><input id="quranEmail" type="email" value="teacher@madad-ai.com" readonly></div>
+          </div>
+          <div class="field"><label>ملاحظات التجويد، ضبط الحلقة، والتقييم الإشرافي</label><textarea id="tajweedNotes" rows="3" placeholder="سجل تقييم المشرف العام على الحلقة..."></textarea></div>
+          <button id="quranBtn" class="primary-btn" onclick="submitQuranReport()"><span>🚀</span> اعتماد التقرير الإشرافي وإرساله لبريد المعلم</button>
+          <div id="quranLoading" style="display:none; color:var(--gold-dark); margin-top:14px; font-weight:600;">جاري إرسال التقرير الإشرافي...</div>
+          <div id="quranOutput" class="output"></div>
+        </div>
+      </div>
+
+      <div id="supervisorPanel" class="page-panel">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h2>👔 بوابة الإشراف وجودة التعليم (Supervisor Center)</h2>
+            <div style="display:flex; gap:10px;"><button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="addNewTeacherModal()"><span>➕</span> إضافة معلم جديد</button><button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#137333;" onclick="addNewStudentModal()"><span>➕</span> إضافة طالب جديد</button></div>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">مراقبة جودة التدريس، تحليل أداء الكوادر التعليمية، وإدارة الخطط الإشرافية والعلاجية مدعومة بمحرك مداد الذكي.</p>
+          <div class="ai-advisor-box">
+            <h3 style="color:var(--gold);"><span>🤖</span> مستشار الإشراف الذكي (تحليل الأداء واقتراح التدريب والحلول)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:12px;">تحليل فوري لالتزام المعلمين وسرعة تصحيحهم للواجبات لاقتراح التوجيهات والخطط العلاجية:</p>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="runSupervisorAiAdvisor()"><span>✨</span> توليد تقرير الجودة والتوصيات الإشرافية</button>
+            <div id="supervisorAiAdvisorOutput" class="output"></div>
+          </div>
+          <div class="card" style="margin-bottom:25px; background:var(--accent-sand);">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">📊 رصد وتقييم أداء المعلمين والالتزام الأكاديمي</h3>
+            <div style="overflow-x:auto;"><table class="supervision-table"><thead><tr><th>اسم المعلم</th><th>الأداء العام</th><th>الالتزام بالمواعيد</th><th>رضا الطلاب</th><th>سرعة التصحيح</th><th>توجيه الذكاء الاصطناعي والتصرف المقترح</th></tr></thead>
+              <tbody id="supervisorTeachersTable">
+                <tr><td><b>أستاذ أحمد محمد</b></td><td class="text-center" style="color:var(--success); font-weight:700;">ممتاز (96%)</td><td class="text-center">98%</td><td class="text-center">4.9 / 5</td><td class="text-center">سريع جداً (أقل من 6 ساعات)</td><td><span style="color:var(--success); font-size:12.5px;">أداء استثنائي؛ مرشح لبرنامج القيادة الأكاديمية ونقل الخبرات.</span></td></tr>
+                <tr><td><b>أستاذة فاطمة علي</b></td><td class="text-center" style="color:var(--gold-dark); font-weight:700;">جيد جداً (88%)</td><td class="text-center">85%</td><td class="text-center">4.6 / 5</td><td class="text-center">متوسط (خلال 24 ساعة)</td><td><span style="color:var(--danger); font-size:12.5px;">تحتاج ورشة عمل قصيرة في إدارة الوقت وتنظيم جداول الواجبات.</span></td></tr>
+              </tbody></table></div>
+          </div>
+          <div class="card" style="margin-bottom:25px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+              <h3 style="font-size:18px; margin:0;">👥 جدول متابعة الطلاب التفصيلي (تعديل يدوي كامل)</h3>
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#137333;" onclick="switchPanel('curriculumPanel', document.querySelectorAll('.sidebar-menu a')[6])"><span>📘</span> فتح استوديو المناهج وتخطيطه</button>
+            </div>
+            <p style="color:var(--text-muted); font-size:13.5px; margin-bottom:14px;">عدد الحصص المستهدف شهريًا قابل للتعديل اليدوي (4 / 6 / 8 / 12) لكل طالب — وبمجرد تغييره ينشئ النظام آليًا عدد خانات الجدول المطلوبة.</p>
+            <div class="mode-toggle"><button class="mode-btn active-mode" id="modeBtnSessions" onclick="setTrackingMode('sessions')">📅 نظام الحصص الشهرية</button><button class="mode-btn" id="modeBtnHours" onclick="setTrackingMode('hours')">🕒 نظام الساعات اليومية (للمعاهد الفعلية)</button></div>
+            <div id="sessionsModeBlock">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                <button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#5A605C;" onclick="addManualSessionColumnForAll()"><span>➕</span> إضافة خانة حصة يدوياً للجميع</button>
+                <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="addNewSupervisionStudent()"><span>➕</span> إضافة طالب جديد للجدول</button>
+                <button class="primary-btn" style="padding:8px 16px; font-size:13px; background:#137333;" onclick="exportSupervisionExcel()"><span>📊</span> تصدير الجدول (.xlsx)</button>
+              </div>
+              <div style="overflow-x:auto;"><table class="supervision-table" id="supervisorTrackingTable"><thead><tr id="supervisorTrackingHead"></tr></thead><tbody id="supervisorTrackingBody"></tbody></table></div>
+            </div>
+            <div id="hoursModeBlock" style="display:none;">
+              <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:14px;">للمعاهد التي تعمل بدوام يومي ثابت: سجل ساعات عمل كل معلم يوميًا.</p>
+              <button class="primary-btn" style="padding:8px 16px; font-size:13px; margin-bottom:14px;" onclick="addDailyHoursEntry()"><span>➕</span> تسجيل يوم عمل جديد</button>
+              <div style="overflow-x:auto;"><table class="supervision-table" id="dailyHoursTable"><thead><tr><th>المعلم</th><th>التاريخ</th><th>عدد الساعات</th><th>نوع الدوام</th><th>ملاحظات</th><th>حذف</th></tr></thead><tbody id="dailyHoursBody"></tbody></table></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:25px; background:var(--accent-sand);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+              <h3 style="font-size:18px; margin:0;">💰 شؤون المعلمين والرواتب</h3>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <select id="currencySelector" onchange="toggleCurrencyRate()" style="padding:8px 12px; font-weight:700; color:var(--gold-dark); font-size:13px; width:auto;"><option value="USD" selected>الدولار الأمريكي ($)</option><option value="EGP">الجنيه المصري (EGP)</option></select>
+                <button class="primary-btn" style="padding:8px 16px; font-size:13px;" onclick="addNewSupervisionTeacher()"><span>➕</span> إضافة معلم جديد</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;"><table class="supervision-table" id="supervisionTeachersTable"><thead><tr><th>اسم المعلم</th><th>البريد / الهاتف</th><th id="rateHeader">سعر الساعة ($)</th><th id="countHeader">عدد الحصص المنجزة</th><th id="totalHeader">إجمالي الراتب ($)</th><th>تنبيه</th></tr></thead><tbody id="supervisionTeachersBody"></tbody></table></div>
+          </div>
+          <div class="card" style="margin-bottom:0;">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">📝 استمارة المرور الإشرافي وإرسال التقارير لبريد المعلمين</h3>
+            <div class="grid-2">
+              <div class="field"><label>اختر المعلم (قيد المرور الإشرافي):</label><select id="supTargetTeacher" onchange="updateSupervisorEmail()"><option value="أحمد محمد" data-email="ahmed.m@madad-ai.com">أستاذ أحمد محمد</option><option value="فاطمة علي" data-email="fatma.a@madad-ai.com">أستاذة فاطمة علي</option></select></div>
+              <div class="field"><label>البريد الإلكتروني للإرسال التلقائي:</label><input type="email" id="supTargetEmail" value="ahmed.m@madad-ai.com" readonly style="background:var(--accent-sand);"></div>
+            </div>
+            <div class="field"><label>ملاحظات المرور الإشرافي والجوانب الإبداعية أو التطويرية:</label><textarea id="supNotesInput" rows="3" placeholder="أداء متميز في إدارة التفاعل الصفي..."></textarea></div>
+            <button class="primary-btn" onclick="sendSupervisorReportDirectly()"><span>🚀</span> إرسال التقرير الإشرافي فوراً لبريد المعلم</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="managementPanel" class="page-panel">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h2>⚙️ بوابة الإدارة والشؤون المالية والتشغيل (ERP & CRM)</h2>
+            <button class="primary-btn" style="background:#137333; padding:8px 16px; font-size:13px;" onclick="exportExcel()"><span>📊</span> تصدير إكسل (.xlsx)</button>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">النظام المالي والمؤسسي المتكامل لإدارة الموارد البشرية، أجور المعلمين، وعلاقات الطلاب (CRM). <b>الترحيل الشهري يعمل آلياً بمجرد اكتمال 4 حصص — بلا أي زر يدوي.</b></p>
+          <div class="ai-advisor-box">
+            <h3 style="color:var(--gold);"><span>🤖</span> مستشار التطوير المالي والإداري (Madad AI)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:12px;">تحليل الإيرادات، أجور المعلمين، وكفاءة التشغيل لتقديم حلول تطويرية فورية وزيادة الأرباح:</p>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="runManagementAiAdvisor()"><span>✨</span> تحليل وإبداء توصيات مالية وإدارية</button>
+            <div id="managementAiAdvisorOutput" class="output"></div>
+          </div>
+          <div class="stats-grid" style="margin-bottom:25px;">
+            <div class="stat-card"><h4>إيرادات الشهر</h4><div class="number" style="color:var(--success);">$36,250</div></div>
+            <div class="stat-card"><h4>إجمالي أجور المعلمين</h4><div class="number" style="color:var(--gold);">$12,400</div></div>
+            <div class="stat-card"><h4>صافي الأرباح التشغيلية</h4><div class="number" style="color:var(--success);">$23,850</div></div>
+            <div class="stat-card"><h4>معدل الاحتفاظ (CRM)</h4><div class="number" style="color:var(--gold);">92.5%</div></div>
+          </div>
+          <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">👥 جدول تتبع الحصص الشهرية والاشتراكات</h3>
+            <div style="overflow-x:auto;"><table class="supervision-table" id="studentsTrackingTable">
+              <thead><tr><th>اسم الطالب</th><th>البريد الإلكتروني</th><th>رقم الهاتف</th><th>المعلم المسؤول</th><th>الشهر / الدورة</th><th>المستهدف</th><th>الحصة 1</th><th>الحصة 2</th><th>الحصة 3</th><th>الحصة 4</th><th>الحالة</th></tr></thead>
+              <tbody><tr style="background-color: var(--card-bg);" data-student="أحمد جونسون" data-email="johnson@email.com" data-phone="+201012345678" data-teacher="أحمد محمد" data-month="1" data-rolled="false">
+                <td><b>أحمد جونسون</b></td><td>johnson@email.com</td><td>+201012345678</td><td>أحمد محمد</td><td><b>الشهر الأول (سبتمبر)</b></td><td class="text-center" style="font-weight:700; color:var(--gold);">4</td>
+                <td class="text-center"><select class="editable-cell session-status" onchange="checkMonthlyCompletion(this)"><option value="completed" selected>✅ حضر</option><option value="absent">❌ غائب</option></select></td>
+                <td class="text-center"><select class="editable-cell session-status" onchange="checkMonthlyCompletion(this)"><option value="completed" selected>✅ حضر</option><option value="absent">❌ غائب</option></select></td>
+                <td class="text-center"><select class="editable-cell session-status" onchange="checkMonthlyCompletion(this)"><option value="completed" selected>✅ حضر</option><option value="absent">❌ غائب</option></select></td>
+                <td class="text-center"><select class="editable-cell session-status" onchange="checkMonthlyCompletion(this)"><option value="completed" selected>✅ حضر</option><option value="absent">❌ غائب</option></select></td>
+                <td class="text-center status-cell" style="color:var(--success); font-weight:700;">مكتمل الشهري ⭐</td></tr></tbody>
+            </table></div>
+            <p style="font-size:12px; color:var(--text-muted); margin-top:10px;">💡 غيّر أي حصة إلى "غائب" ثم أعد الأربع إلى "حضر" — سيضيف النظام صف الشهر التالي تلقائيًا.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="curriculumPanel" class="page-panel">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h2>📚 استوديو المناهج التفاعلية (Curriculum Studio)</h2>
+            <div style="display:flex; gap:10px;"><button class="primary-btn" style="padding:10px 20px; font-size:13.5px;" onclick="addNewCurriculumModal()"><span>➕</span> إضافة منهج جديد يدوياً</button><button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="runCurriculumAiBuilderModal()"><span>✨</span> توليد خطة بالذكاء الاصطناعي</button></div>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">إدارة وهندسة المناهج الأكاديمية، تقسيم المستويات، خطط الوحدات، بنوك الأسئلة، معايير التقييم (Rubrics)، ورفع ملفات كل مادة (كتب، تسجيلات، أوراق عمل).</p>
+          <div class="ai-assistant-widget" style="margin-bottom:25px;">
+            <h3><span>🤖</span> مساعد تصميم وتوليد المناهج (Madad Curriculum AI)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:15px;">أدخل عنوان المنهج أو المستوى وسيقوم الذكاء الاصطناعي ببناء خطة الوحدات والدروس وأهداف التعلم فوراً:</p>
+            <div class="grid-2" style="margin-bottom:15px;">
+              <div class="field" style="margin-bottom:0;"><label>موضوع المنهج:</label><input type="text" id="curriculumAiPrompt" value="منهج تعليم المحادثة المتقدمة للناطقين بغيرها (المستوى الثالث)"></div>
+              <div class="field" style="margin-bottom:0;"><label>المستوى الأكاديمي:</label><select id="curriculumLevelSelect"><option>مستوى المبتدئين (A1 - A2)</option><option>مستوى المتوسط (B1 - B2)</option><option>مستوى المتقدم (C1 - C2)</option></select></div>
+            </div>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="generateCurriculumAiPlan()"><span>🚀</span> توليد الخطة والدروس الشاملة</button>
+            <div id="curriculumAiOutput" class="output"></div>
+          </div>
+          <div class="card" style="margin-bottom:0; background:var(--accent-sand);"><h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">📋 قائمة المناهج والخطط الأكاديمية النشطة</h3><div id="curriculumListContainer"></div></div>
+        </div>
+      </div>
+
+      <div id="communicationPanel" class="page-panel">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+            <h2>📢 بوابة التواصل والإشعارات الفورية (Communication Hub)</h2>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px;" onclick="addNewBroadcastModal()"><span>➕</span> إرسال تعميم أو إشعار جديد</button>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">إدارة قنوات الإرسال التلقائي للواجبات، تقارير الحضور، والتعاميم الإدارية عبر البريد الإلكتروني وواتساب للمؤسسة.</p>
+          <div class="ai-assistant-widget" style="margin-bottom:25px;">
+            <h3><span>🤖</span> مساعد التعاميم والإشعارات الذكي (Madad Broadcast AI)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:15px;">اكتب موضوع التعميم أو التنبيه وسيقوم مداد بصياغة رسائل احترافية مخصصة لكل مستفيد:</p>
+            <div class="field" style="margin-bottom:15px;"><label>موضوع الرسالة أو التعميم:</label><input type="text" id="broadcastPromptInput" value="تذكير ببدء الاختبارات الشهرية وموعد تسليم الواجبات"></div>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="runBroadcastAiGenerator()"><span>✨</span> صياغة وبث التعميم فوراً</button>
+            <div id="broadcastAiOutput" class="output"></div>
+          </div>
+          <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">📋 سجل الرسائل والإشعارات المرسلة مؤخراً</h3>
+            <div style="overflow-x:auto;"><table class="supervision-table" id="broadcastLogTable"><thead><tr><th>عنوان الرسالة / التعميم</th><th>المستهدفون</th><th>قناة الإرسال</th><th>تاريخ ووقت الإرسال</th><th>حالة التوصيل</th></tr></thead>
+              <tbody>
+                <tr><td><b>إرسال واجب الوحدة الثالثة التفاعلي</b></td><td>طلاب المستوى الأول (غير العرب)</td><td>بريد + واتساب</td><td>اليوم، 04:30 مساءً</td><td class="text-center" style="color:var(--success); font-weight:700;">تم التسليم بنجاح (100%)</td></tr>
+                <tr><td><b>تقرير المرور الإشرافي الأسبوعي</b></td><td>هيئة المعلمين</td><td>البريد الإلكتروني</td><td>أمس، 10:00 صباحاً</td><td class="text-center" style="color:var(--success); font-weight:700;">تم التسليم (2/2)</td></tr>
+              </tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="reportsPanel" class="page-panel">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
+            <h2>📈 بوابة التقارير المتقدمة والتحليل الأكاديمي (Analytics Hub)</h2>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#137333;" onclick="exportReportsExcel()"><span>📊</span> تصدير تقرير المؤسسة الشامل (.xlsx)</button>
+          </div>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">لوحة التحليلات التنفيذية المدعومة بالذكاء الاصطناعي لاستشراف الأداء الأكاديمي، كفاءة الحصص، وتطور مستويات الطلاب.</p>
+          <div class="ai-assistant-widget" style="margin-bottom:25px;">
+            <h3><span>🤖</span> محلل البيانات التنفيذي الذكي (Madad Executive AI)</h3>
+            <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:15px;">اضغط أدناه لتوليد تقرير تشخيصي شامل حول أداء المعاهد، نسب الحضور، ومقترحات رفع الكفاءة:</p>
+            <button class="primary-btn" style="padding:10px 20px; font-size:13.5px; background:#7B1FA2;" onclick="runExecutiveAiAnalytics()"><span>✨</span> توليد التحليل الإحصائي الشامل</button>
+            <div id="executiveAnalyticsOutput" class="output"></div>
+          </div>
+          <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+            <h3 style="color:var(--gold-dark); font-size:18px; margin-bottom:15px;">📊 مؤشرات الأداء الرئيسية للمؤسسة (KPIs)</h3>
+            <div style="overflow-x:auto;"><table class="supervision-table" id="kpiReportsTable"><thead><tr><th>المؤشر الرئيسي</th><th>القيمة الحالية</th><th>معدل النمو</th><th>الحالة التشغيلية</th></tr></thead>
+              <tbody>
+                <tr><td><b>نسبة الحضور والانضباط للطلاب</b></td><td>96.4%</td><td>+2.1% عن الشهر الماضي</td><td class="text-center" style="color:var(--success); font-weight:700;">ممتاز ⭐</td></tr>
+                <tr><td><b>معدل تسليم الواجبات التفاعلية (12 سؤالاً)</b></td><td>89.2%</td><td>+5.4%</td><td class="text-center" style="color:var(--success); font-weight:700;">مستقر وصاعد</td></tr>
+                <tr><td><b>نسبة الطلاب المعرضين لخطر الانقطاع</b></td><td>3.1%</td><td>-0.8%</td><td class="text-center" style="color:var(--success); font-weight:700;">تحت السيطرة</td></tr>
+              </tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. التدريب والتطوير المهني -->
+      <div id="trainingPanel" class="page-panel">
+        <div class="card">
+          <h2>🎓 التدريب والتطوير المهني (Training Hub)</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-bottom:25px;">مسارات تأهيل المعلمين، الورش الحية، الحقائب المهنية، الملاحظة الصفية، وقياس الأثر التدريبي — في قسم واحد مرتبط بسجلات المعلمين في بوابة الإشراف.</p>
+          <div class="stats-grid" style="margin-bottom:25px;">
+            <div class="stat-card"><h4>ساعات التدريب المنجزة</h4><div class="number">1,280 ساعة</div></div>
+            <div class="stat-card"><h4>الورش الحية المجدولة</h4><div class="number" style="color:var(--gold);">8 <span style="font-size:12px; font-weight:600;">(3 هذا الأسبوع)</span></div></div>
+            <div class="stat-card"><h4>متوسط تقييم الأداء</h4><div class="number" style="color:var(--success);">4.8 / 5</div></div>
+          </div>
+          <div class="training-tabs">
+            <button class="training-tab-btn active-training-tab" id="ttab-pathways" onclick="switchTrainingTab('pathways')"><i class="fa-solid fa-route"></i> المسارات التدريبية والتأهيلية</button>
+            <button class="training-tab-btn" id="ttab-workshops" onclick="switchTrainingTab('workshops')"><i class="fa-solid fa-video"></i> الورش والمحاضرات الحية</button>
+            <button class="training-tab-btn" id="ttab-resources" onclick="switchTrainingTab('resources')"><i class="fa-solid fa-folder-open"></i> الحقائب والمراجع المهنية</button>
+            <button class="training-tab-btn" id="ttab-observations" onclick="switchTrainingTab('observations')"><i class="fa-solid fa-clipboard-check"></i> الملاحظة الصفية والتقييم</button>
+            <button class="training-tab-btn" id="ttab-analytics" onclick="switchTrainingTab('analytics')"><i class="fa-solid fa-chart-pie"></i> القياس والأثر التدريبي</button>
+          </div>
+
+          <div id="tpanel-pathways" class="training-panel-content active-training-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div><h3 style="font-size:17px; margin-bottom:4px;">مسارات تأهيل المعلمين</h3><p style="font-size:12.5px; color:var(--text-muted); margin:0;">البرامج الإجبارية والتخصصية لتطوير كفاءة الهيئة التعليمية.</p></div>
+              <select style="width:auto; font-size:12.5px; padding:9px 14px;"><option>جميع المسارات</option><option>معلم جديد (Onboarding)</option><option>تطوير مستمر</option></select>
+            </div>
+            <div class="grid-3">
+              <div class="path-card"><div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span class="path-badge">إجباري</span><span class="path-hours"><i class="fa-regular fa-clock"></i> 24 ساعة</span></div>
+                <h4>دبلوم أساسيات تعليم العربية لغير الناطقين بها</h4><p style="margin:8px 0 12px;">مسار مخصص للمعلمين الجدد يغطي أحدث نظريات اكتساب اللغة الثانية وإدارة الصف التفاعلي.</p>
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span style="color:var(--text-muted);">نسبة اجتياز الكادر</span><span style="color:var(--gold-dark);">78%</span></div>
+                <div class="progress-container" style="height:8px; margin:0;"><div class="progress-bar" style="width:78%;"></div></div></div>
+                <div class="path-footer"><span>45 معلم مسجل</span><button class="primary-btn" style="padding:6px 14px; font-size:11.5px;" onclick="alert('فتح تفاصيل المسار التدريبي')">إدارة المحتوى</button></div></div>
+              <div class="path-card"><div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span class="path-badge">تطوير مهني</span><span class="path-hours"><i class="fa-regular fa-clock"></i> 16 ساعة</span></div>
+                <h4>استراتيجيات تدريس المهارات اللغوية الأربع</h4><p style="margin:8px 0 12px;">مهارات متقدمة في تصميم أنشطة الاستماع، التحدث، القراءة، والكتابة التفاعلية.</p>
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span style="color:var(--text-muted);">نسبة اجتياز الكادر</span><span style="color:var(--gold-dark);">62%</span></div>
+                <div class="progress-container" style="height:8px; margin:0;"><div class="progress-bar" style="width:62%;"></div></div></div>
+                <div class="path-footer"><span>32 معلم مسجل</span><button class="primary-btn" style="padding:6px 14px; font-size:11.5px;" onclick="alert('فتح تفاصيل المسار التدريبي')">إدارة المحتوى</button></div></div>
+              <div class="path-card"><div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><span class="path-badge">قيادي</span><span class="path-hours"><i class="fa-regular fa-clock"></i> 20 ساعة</span></div>
+                <h4>برنامج إعداد المشرفين التربويين المعاصرين</h4><p style="margin:8px 0 12px;">تأهيل المعلمين المتميزين لمهام الإشراف، الملاحظة الصفية، وتقديم التغذية الراجعة الفعالة.</p>
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span style="color:var(--text-muted);">نسبة اجتياز الكادر</span><span style="color:var(--gold-dark);">45%</span></div>
+                <div class="progress-container" style="height:8px; margin:0;"><div class="progress-bar" style="width:45%;"></div></div></div>
+                <div class="path-footer"><span>14 مرشح</span><button class="primary-btn" style="padding:6px 14px; font-size:11.5px;" onclick="alert('فتح تفاصيل المسار التدريبي')">إدارة المحتوى</button></div></div>
+            </div>
+          </div>
+
+          <div id="tpanel-workshops" class="training-panel-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div><h3 style="font-size:17px; margin-bottom:4px;">الورش والمحاضرات الحية</h3><p style="font-size:12.5px; color:var(--text-muted); margin:0;">جدول اللقاءات الافتراضية التبادلية وإدارة الحضور.</p></div>
+              <button class="primary-btn" style="padding:8px 16px; font-size:12.5px;" onclick="alert('فتح نموذج جدولة ورشة جديدة')"><i class="fa-solid fa-calendar-plus"></i> جدولة ورشة جديدة</button>
+            </div>
+            <div style="overflow-x:auto;"><table class="supervision-table"><thead><tr><th>عنوان الورشة</th><th>المحاضر / المدرب</th><th>التاريخ والوقت</th><th>الحالة</th><th class="text-center">المسجلون</th><th class="text-center">الإجراءات</th></tr></thead>
+              <tbody>
+                <tr><td><b>استخدام الألعاب اللغوية في تحفيز طلاب المستوى الابتدائي</b></td><td>د. أحمد الزهراني</td><td>25 مارس 2026 - 05:00 م</td><td><span style="background:#E8F8F5; color:#27AE60; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">مجدولة</span></td><td class="text-center"><b>38 معلم</b></td><td class="text-center"><button class="primary-btn" style="padding:6px 14px; font-size:11.5px;" onclick="alert('الانضمام لغرفة الورشة')"><i class="fa-solid fa-video"></i> دخول</button></td></tr>
+                <tr><td><b>تقنيات تصحيح الأخطاء الصوتية بدون كسر دافعية المتعلم</b></td><td>أ. سارة المنهالي</td><td>22 مارس 2026 - 08:00 م</td><td><span style="background:var(--accent-sand); color:var(--text-muted); padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700; border:1px solid var(--border-color);">مكتملة</span></td><td class="text-center"><b>52 معلم</b></td><td class="text-center"><button class="primary-btn" style="padding:6px 14px; font-size:11.5px; background:#5A605C;" onclick="alert('عرض التسجيل والشهادات')"><i class="fa-solid fa-play"></i> التسجيل</button></td></tr>
+              </tbody></table></div>
+          </div>
+
+          <div id="tpanel-resources" class="training-panel-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div><h3 style="font-size:17px; margin-bottom:4px;">الحقائب التعليمية والمراجع المهنية</h3><p style="font-size:12.5px; color:var(--text-muted); margin:0;">أدلة المعلم، نماذج الدروس، ومشاركات الممارسات الناجحة.</p></div>
+              <button class="primary-btn" style="padding:8px 16px; font-size:12.5px;" onclick="alert('فتح نموذج رفع ملف جديد')"><i class="fa-solid fa-upload"></i> إضافة مرجع أو حقيبة</button>
+            </div>
+            <div class="grid-4">
+              <div class="resource-card"><div><div class="resource-icon"><i class="fa-solid fa-file-pdf"></i></div><h4 style="margin-top:10px;">دليل المعلم الشامل لمستويات مداد</h4><p style="margin-top:6px;">مرجع أساسي لتوزيع المناهج وخطط الوحدات الدراسية.</p></div><div class="resource-footer"><span style="color:var(--text-muted);">PDF (4.2 MB)</span><a href="#" onclick="alert('جاري تحميل الملف...'); return false;" style="color:var(--gold-dark); font-weight:700; text-decoration:none;"><i class="fa-solid fa-download"></i> تحميل</a></div></div>
+              <div class="resource-card"><div><div class="resource-icon"><i class="fa-solid fa-file-word"></i></div><h4 style="margin-top:10px;">نماذج خطط الدروس اليومية</h4><p style="margin-top:6px;">قوالب جاهزة قابلة للتعديل لإعداد الدروس بطريقة تفاعلية.</p></div><div class="resource-footer"><span style="color:var(--text-muted);">Word (1.5 MB)</span><a href="#" onclick="alert('جاري تحميل الملف...'); return false;" style="color:var(--gold-dark); font-weight:700; text-decoration:none;"><i class="fa-solid fa-download"></i> تحميل</a></div></div>
+              <div class="resource-card"><div><div class="resource-icon"><i class="fa-solid fa-folder-tree"></i></div><h4 style="margin-top:10px;">بنك الأنشطة والبطاقات الفلاشية</h4><p style="margin-top:6px;">مجموعة ألعاب وأنشطة صفية جاهزة للطباعة والتصميم.</p></div><div class="resource-footer"><span style="color:var(--text-muted);">أرشيف مضغوط</span><a href="#" onclick="alert('جاري تحميل الملف...'); return false;" style="color:var(--gold-dark); font-weight:700; text-decoration:none;"><i class="fa-solid fa-download"></i> تحميل</a></div></div>
+              <div class="resource-card"><div><div class="resource-icon"><i class="fa-solid fa-book-open"></i></div><h4 style="margin-top:10px;">أبحاث في لسانيات النص العربي</h4><p style="margin-top:6px;">مختارات من الدراسات الأكاديمية الحديثة في تعليم العربية.</p></div><div class="resource-footer"><span style="color:var(--text-muted);">PDF (8.1 MB)</span><a href="#" onclick="alert('جاري تحميل الملف...'); return false;" style="color:var(--gold-dark); font-weight:700; text-decoration:none;"><i class="fa-solid fa-download"></i> تحميل</a></div></div>
+            </div>
+          </div>
+
+          <div id="tpanel-observations" class="training-panel-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div><h3 style="font-size:17px; margin-bottom:4px;">سجلات الملاحظة الصفية وخطط النمو (PDP)</h3><p style="font-size:12.5px; color:var(--text-muted); margin:0;">تقارير الزيارات الإشرافية والتوصيات الفردية الموجهة للمعلمين — تتكامل مع سجلات بوابة الإشراف.</p></div>
+              <button class="primary-btn" style="padding:8px 16px; font-size:12.5px;" onclick="switchPanel('supervisorPanel', document.querySelectorAll('.sidebar-menu a')[4])"><i class="fa-solid fa-pen-to-square"></i> زيارة صفية جديدة (بوابة الإشراف)</button>
+            </div>
+            <div style="overflow-x:auto;"><table class="supervision-table"><thead><tr><th>اسم المعلم</th><th>المعهد / الفرع</th><th>المشرف الملاحظ</th><th>التاريخ</th><th class="text-center">التقييم العام</th><th class="text-center">خطة النمو (PDP)</th></tr></thead>
+              <tbody>
+                <tr><td><b>أ. خالد بن سلطان</b></td><td>فرع الرياض (الرئيسي)</td><td>د. عبدالسلام الغامدي</td><td>18 مارس 2026</td><td class="text-center" style="color:var(--success); font-weight:700;">4.9 / 5 (ممتاز)</td><td class="text-center"><span style="background:#E8F8F5; color:#27AE60; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:700;">مفعلة (مستمر)</span></td></tr>
+                <tr><td><b>أ. رامي المصري</b></td><td>فرع جدة</td><td>أ. فهد العمري</td><td>15 مارس 2026</td><td class="text-center" style="color:var(--gold-dark); font-weight:700;">3.8 / 5 (يحتاج تحسين)</td><td class="text-center"><button class="primary-btn" style="padding:6px 14px; font-size:11.5px; background:#B3821E;" onclick="generateTrainingPDP('أ. رامي المصري', '3.8 / 5 (يحتاج تحسين)')">عرض PDP المقترحة</button></td></tr>
+                <tr><td colspan="6" id="trainingPdpRow" style="display:none; background:var(--accent-sand);"><div id="trainingPdpLoading" style="display:none; color:var(--gold-dark); font-weight:600; padding:8px 0;">جاري إعداد خطة النمو المهني...</div><div id="trainingPdpOutput" class="output" style="margin:8px 0 0; display:none;"></div></td></tr>
+              </tbody></table></div>
+          </div>
+
+          <div id="tpanel-analytics" class="training-panel-content">
+            <div class="grid-2">
+              <div class="card" style="margin-bottom:0; background:var(--accent-sand);">
+                <h3 style="font-size:16px; margin-bottom:4px;">توزيع ساعات التدريب حسب المعاهد</h3><p style="font-size:12px; color:var(--text-muted); margin-bottom:18px;">مقارنة حجم التفاعل والتطوير بين مختلف الفروع التابعة.</p>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                  <div><div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span>فرع الرياض (الرئيسي)</span><span style="color:var(--gold-dark);">450 ساعة</span></div><div class="progress-container" style="height:9px; margin:0;"><div class="progress-bar" style="width:85%;"></div></div></div>
+                  <div><div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span>فرع جدة</span><span style="color:var(--gold-dark);">380 ساعة</span></div><div class="progress-container" style="height:9px; margin:0;"><div class="progress-bar" style="width:70%;"></div></div></div>
+                  <div><div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:6px;"><span>فرع الدمام</span><span style="color:var(--gold-dark);">290 ساعة</span></div><div class="progress-container" style="height:9px; margin:0;"><div class="progress-bar" style="width:55%;"></div></div></div>
+                </div>
+              </div>
+              <div class="card" style="margin-bottom:0; background:var(--accent-sand); display:flex; flex-direction:column; justify-content:space-between;">
+                <div><h3 style="font-size:16px; margin-bottom:4px;">مؤشر الأثر التدريبي القبلي والبعدي</h3><p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">قياس نسبة تحسن كفاءة المعلمين بعد اجتياز البرامج التأهيلية.</p>
+                  <div class="before-after-box"><div class="ba-item"><span>متوسط الاختبار القبلي</span><h4>62.4%</h4></div><div style="color:var(--gold-dark); font-size:20px;"><i class="fa-solid fa-arrow-left"></i></div><div class="ba-item"><span>متوسط الاختبار البعدي</span><h4>91.8%</h4></div></div></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px dashed var(--border-color); font-size:12px; color:var(--text-muted);"><span>نسبة العائد على التدريب (ROI): <b style="color:var(--success);">عالية جداً</b></span><a href="#" onclick="alert('تحميل تقرير القياس الإحصائي المفصل'); return false;" style="color:var(--gold-dark); font-weight:700; text-decoration:none;">تحميل التقرير الكامل</a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//  ⚙️  إعدادات Firebase — أضف بيانات مشروعك هنا
+//  راجع ملف FIREBASE_SETUP.md للتعليمات خطوة بخطوة
+// ================================================================
+const FIREBASE_CONFIG = {
+  apiKey:            typeof FIREBASE_API_KEY !== 'undefined'            ? FIREBASE_API_KEY            : "",
+  authDomain:        typeof FIREBASE_AUTH_DOMAIN !== 'undefined'        ? FIREBASE_AUTH_DOMAIN        : "",
+  projectId:         typeof FIREBASE_PROJECT_ID !== 'undefined'         ? FIREBASE_PROJECT_ID         : "",
+  storageBucket:     typeof FIREBASE_STORAGE_BUCKET !== 'undefined'     ? FIREBASE_STORAGE_BUCKET     : "",
+  messagingSenderId: typeof FIREBASE_MESSAGING_SENDER_ID !== 'undefined'? FIREBASE_MESSAGING_SENDER_ID: "",
+  appId:             typeof FIREBASE_APP_ID !== 'undefined'             ? FIREBASE_APP_ID             : ""
+};
+
+// بديل — إذا أردت وضع الإعدادات مباشرة في الكود للتطوير المحلي فقط:
+// const FIREBASE_CONFIG = {
+//   apiKey: "AIza...",
+//   authDomain: "my-project.firebaseapp.com",
+//   projectId: "my-project",
+//   storageBucket: "my-project.appspot.com",
+//   messagingSenderId: "123456789",
+//   appId: "1:123456789:web:abc123"
+// };
+// ================================================================
+
+let auth = null;
+let db = null;       // Firestore
+let currentUser = null;
+let firebaseReady = false;
+
+try {
+  if (FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey.length > 5) {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    auth = firebase.auth();
+    db   = firebase.firestore();
+    firebaseReady = true;
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    auth.onAuthStateChanged(function(user) {
+      currentUser = user;
+      if (user) {
+        document.getElementById('loginGate').style.display = 'none';
+        document.getElementById('appContainer').classList.add('app-visible');
+        updateNavUser(user);
+        handleHashNavigation();
+        initApp();
+        if (!user.isAnonymous) loadFromFirestore(user.uid);
+      } else {
+        document.getElementById('loginGate').style.display = 'flex';
+        document.getElementById('appContainer').classList.remove('app-visible');
+      }
+    });
+  } else {
+    // Firebase غير مضبوط — اعرض تنبيهاً
+    document.getElementById('firebaseNotice').style.display = 'block';
+    console.warn('مداد: إعدادات Firebase مفقودة. راجع FIREBASE_SETUP.md');
+  }
+} catch(e) {
+  console.error('خطأ في تهيئة Firebase:', e);
+  document.getElementById('firebaseNotice').style.display = 'block';
+}
+
+// ===== تحديث معلومات المستخدم في الشريط العلوي =====
+function updateNavUser(user) {
+  if (user.isAnonymous) {
+    document.getElementById('navUserName').textContent = 'زائر';
+    document.getElementById('navInstituteName').textContent = 'وضع الزائر — البيانات مؤقتة';
+    document.getElementById('navUserAvatar').textContent = '👤';
+    return;
+  }
+  const saved = JSON.parse(localStorage.getItem('madadUser_' + user.uid) || '{}');
+  const name = user.displayName || saved.name || user.email.split('@')[0];
+  const institute = saved.institute || 'مداد العربية AI';
+  const initial = name.charAt(0).toUpperCase();
+  document.getElementById('navUserName').textContent = name;
+  document.getElementById('navInstituteName').textContent = institute;
+  document.getElementById('navUserAvatar').textContent = initial;
+}
+
+// ===== تسجيل الدخول =====
+async function loginUser() {
+  if (!firebaseReady) { showAuthMsg('loginError', 'لم يتم إعداد Firebase بعد. راجع التعليمات.'); return; }
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showAuthMsg('loginError', 'يرجى ملء جميع الحقول'); return; }
+  setAuthLoading(true, 'loginBtn');
+  hideAuthMsgs();
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch(e) {
+    setAuthLoading(false, 'loginBtn');
+    showAuthMsg('loginError', getFirebaseError(e.code));
+  }
+}
+
+// ===== إنشاء حساب جديد =====
+async function registerUser() {
+  if (!firebaseReady) { showAuthMsg('registerError', 'لم يتم إعداد Firebase بعد. راجع التعليمات.'); return; }
+  const name = document.getElementById('regName').value.trim();
+  const institute = document.getElementById('regInstitute').value.trim();
+  const role = document.getElementById('regRole').value;
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm = document.getElementById('regConfirm').value;
+  if (!name || !institute || !email || !password || !confirm) { showAuthMsg('registerError', 'يرجى ملء جميع الحقول'); return; }
+  if (password !== confirm) { showAuthMsg('registerError', 'كلمتا المرور غير متطابقتين'); return; }
+  if (password.length < 8) { showAuthMsg('registerError', 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'); return; }
+  setAuthLoading(true, 'registerBtn');
+  hideAuthMsgs();
+  try {
+    const result = await auth.createUserWithEmailAndPassword(email, password);
+    await result.user.updateProfile({ displayName: name });
+    // حفظ البيانات الإضافية (المؤسسة، الدور) في localStorage مرتبطة بالـ UID
+    localStorage.setItem('madadUser_' + result.user.uid, JSON.stringify({ name, institute, role }));
+    showAuthMsg('registerSuccess', '🎉 تم إنشاء حسابك بنجاح! جارٍ الدخول...');
+  } catch(e) {
+    setAuthLoading(false, 'registerBtn');
+    showAuthMsg('registerError', getFirebaseError(e.code));
+  }
+}
+
+// ===== تسجيل الدخول بـ Google =====
+async function loginWithGoogle() {
+  if (!firebaseReady) { showAuthMsg('loginError', 'لم يتم إعداد Firebase بعد.'); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  setAuthLoading(true, 'loginBtn');
+  hideAuthMsgs();
+  try {
+    const result = await auth.signInWithPopup(provider);
+    // للمستخدمين الجدد عبر Google، احفظ بيانات أساسية
+    const uid = result.user.uid;
+    if (!localStorage.getItem('madadUser_' + uid)) {
+      localStorage.setItem('madadUser_' + uid, JSON.stringify({
+        name: result.user.displayName,
+        institute: 'لم يحدد بعد',
+        role: 'admin'
+      }));
+    }
+  } catch(e) {
+    setAuthLoading(false, 'loginBtn');
+    if (e.code !== 'auth/popup-closed-by-user') showAuthMsg('loginError', getFirebaseError(e.code));
+  }
+}
+
+// ===== إعادة تعيين كلمة المرور =====
+async function resetPassword() {
+  if (!firebaseReady) return;
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) { showAuthMsg('loginError', 'أدخل بريدك الإلكتروني في الحقل أعلاه أولاً'); return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    showAuthMsg('loginSuccess', '✅ تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني');
+  } catch(e) { showAuthMsg('loginError', getFirebaseError(e.code)); }
+}
+
+// ===== دخول كزائر =====
+async function loginAsGuest() {
+  if (!firebaseReady) { demoEnterApp(); return; }
+  setAuthLoading(true, 'loginBtn');
+  hideAuthMsgs();
+  try {
+    await auth.signInAnonymously();
+    // onAuthStateChanged سيتولى الباقي
+  } catch(e) {
+    setAuthLoading(false, 'loginBtn');
+    // fallback للوضع التجريبي
+    demoEnterApp();
+  }
+}
+
+// ===== تسجيل الخروج =====
+async function signOutUser() {
+  if (!firebaseReady || !auth) return;
+  if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+    try { await auth.signOut(); showToast('👋 تم تسجيل خروجك بنجاح'); } catch(e) {}
+  }
+}
+
+// ===== تبويبات الدخول / التسجيل =====
+function switchAuthTab(tab) {
+  document.getElementById('loginFormSection').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerFormSection').style.display = tab === 'register' ? 'block' : 'none';
+  document.getElementById('loginTab').classList.toggle('active-auth-tab', tab === 'login');
+  document.getElementById('registerTab').classList.toggle('active-auth-tab', tab === 'register');
+  document.getElementById('authLoading').style.display = 'none';
+  hideAuthMsgs();
+}
+
+// ===== مساعدات UI =====
+function setAuthLoading(show, btnId) {
+  document.getElementById('authLoading').style.display = show ? 'block' : 'none';
+  const btn = document.getElementById(btnId);
+  if (btn) { btn.disabled = show; btn.style.opacity = show ? '0.7' : '1'; }
+}
+function showAuthMsg(id, msg) {
+  const el = document.getElementById(id); if (!el) return;
+  el.textContent = msg; el.style.display = 'block';
+}
+function hideAuthMsgs() {
+  ['loginError','loginSuccess','registerError','registerSuccess'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+}
+function getFirebaseError(code) {
+  const map = {
+    'auth/user-not-found': 'لا يوجد حساب بهذا البريد الإلكتروني',
+    'auth/wrong-password': 'كلمة المرور غير صحيحة',
+    'auth/invalid-credential': 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+    'auth/email-already-in-use': 'هذا البريد الإلكتروني مستخدم بالفعل',
+    'auth/invalid-email': 'البريد الإلكتروني غير صالح',
+    'auth/weak-password': 'كلمة المرور ضعيفة جداً — استخدم 8 أحرف على الأقل',
+    'auth/too-many-requests': 'تم تجاوز عدد المحاولات المسموحة. حاول لاحقاً',
+    'auth/network-request-failed': 'خطأ في الاتصال بالإنترنت. تحقق من اتصالك',
+    'auth/popup-blocked': 'تم حجب النافذة المنبثقة. يرجى السماح بها في المتصفح',
+    'auth/account-exists-with-different-credential': 'هذا البريد مسجل بطريقة دخول مختلفة',
+  };
+  return map[code] || 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.';
+}
+
+// ===== Toast Notification =====
+let toastTimeout = null;
+function showToast(msg) {
+  let toast = document.getElementById('madadToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'madadToast'; toast.className = 'madad-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg; toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+// ===== التنقل بالهاش =====
+function handleHashNavigation() {
+  const hash = window.location.hash.replace('#','');
+  if (hash && document.getElementById(hash)) {
+    const links = document.querySelectorAll('.sidebar-menu a');
+    const order = ['dashboardPanel','studentPanel','teacherPanel','quranPanel','supervisorPanel','managementPanel','curriculumPanel','communicationPanel','reportsPanel','trainingPanel'];
+    const idx = order.indexOf(hash);
+    switchPanel(hash, idx > -1 ? links[idx] : null);
+  }
+}
+
+// ===== القائمة الجانبية للهاتف =====
+function toggleMobileSidebar() {
+  document.querySelector('.sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarOverlay').classList.toggle('active');
+}
+function closeMobileSidebar() {
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+  function switchPanel(panelId, linkElem) {
+    document.querySelectorAll('.page-panel').forEach(p => p.classList.remove('active-panel'));
+    document.getElementById(panelId).classList.add('active-panel');
+    document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+    if(linkElem) linkElem.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeMobileSidebar();
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement, icon = document.getElementById('themeIcon');
+    if(html.getAttribute('data-theme') === 'light') { html.setAttribute('data-theme', 'dark'); icon.className = 'fa-solid fa-sun'; }
+    else { html.setAttribute('data-theme', 'light'); icon.className = 'fa-solid fa-moon'; }
+  }
+
+  // ===== دالة مساعدة موحّدة لاستدعاء الخادم بصدق (تعرض الفشل الحقيقي ولا تُخفيه) =====
+  async function callApi(path, payload, outEl, prefix, field) {
+    outEl.style.display = 'block';
+    try {
+      const res = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const raw = await res.text(); let data = null;
+      try { data = JSON.parse(raw); } catch(_) {}
+      if(!data) { outEl.innerHTML = `❌ <b>الخادم لم يُرجع ردًا صالحًا (HTTP ${res.status}).</b><br>الأسباب المحتملة: الخادم الخلفي غير منشور بعد، أو متغير البيئة <code>GEMINI_API_KEY</code> غير مضبوط في Vercel، أو الصفحة تعمل محليًا بلا خادم.`; return false; }
+      if(res.ok && data.status === 'success') { outEl.innerHTML = `${prefix}<br><br>${data[field].replace(/\n/g,'<br>')}`; return true; }
+      outEl.innerHTML = `❌ <b>تعذّر توليد الرد:</b> ${data.detail || 'حدث خطأ غير متوقع من الخادم.'}`; return false;
+    } catch(e) { outEl.innerHTML = `❌ <b>فشل الاتصال بالخادم:</b> ${e.message}`; return false; }
+  }
+
+  // ===== التدريب والتطوير المهني =====
+  function switchTrainingTab(tabId) {
+    document.querySelectorAll('.training-panel-content').forEach(el => el.classList.remove('active-training-panel'));
+    document.querySelectorAll('.training-tab-btn').forEach(el => el.classList.remove('active-training-tab'));
+    document.getElementById('tpanel-' + tabId).classList.add('active-training-panel');
+    document.getElementById('ttab-' + tabId).classList.add('active-training-tab');
+  }
+
+  async function generateTrainingPDP(teacherName, rating) {
+    const row = document.getElementById('trainingPdpRow'), loading = document.getElementById('trainingPdpLoading'), output = document.getElementById('trainingPdpOutput');
+    row.style.display = 'table-cell'; loading.style.display = 'block'; output.style.display = 'none';
+    await callApi('/api/training-plan', { teacher_name: teacherName, rating: rating }, output, `📋 <b>خطة النمو المهني المقترحة لـ ${teacherName}:</b>`, 'training_plan');
+    loading.style.display = 'none';
+  }
+
+  async function askMadadAI(prefilledQuery) {
+    const input = document.getElementById('dashboardAiQuery');
+    if(prefilledQuery) input.value = prefilledQuery;
+    const query = input.value.trim(), out = document.getElementById('dashboardAiOutput');
+    if(!query) { alert('⚠️ الرجاء كتابة سؤالك أولاً.'); return; }
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>جاري الاتصال بمحرك مداد الذكي...</b>';
+    await callApi('/api/ask-madad', { query }, out, '🚀 <b>إجابة مداد:</b>', 'answer');
+  }
+
+  function studentAiAction(actionType) {
+    const out = document.getElementById('studentPersonalAiOutput');
+    out.style.display = 'block'; out.innerHTML = `🤖 <b>مساعد مداد يجهز لك نشاط (${actionType}) بالذكاء الاصطناعي...</b>`;
+    setTimeout(() => { out.innerHTML = `💡 <b>مساعد مداد (${actionType}):</b><br>• تم تجهيز محتوى تفاعلي مخصص لمهارتك الحالية.<br>• <b>التدريب المقترح:</b> ركز على ترديد الكلمات بصوت واضح لرفع نسبة دقة النطق.`; }, 800);
+  }
+
+  async function runStudentPersonalAi() {
+    const query = document.getElementById('studentPersonalQuery').value.trim(), out = document.getElementById('studentPersonalAiOutput');
+    if(!query) { alert("الرجاء إدخال سؤالك أولاً."); return; }
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>جاري الاتصال بمحرك مداد الذكي للطالب...</b>';
+    await callApi('/api/ask-madad', { query }, out, '🚀 <b>إجابة مداد:</b>', 'answer');
+  }
+
+  async function runTeacherAiLessonGenerator() {
+    const topic = document.getElementById('aiLessonPromptInput').value, out = document.getElementById('teacherAiLessonOutput');
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>جاري توليد الخطة والواجب...</b>';
+    await callApi('/api/generate-lesson', { topic }, out, '🚀 <b>خطة الدرس والواجب:</b>', 'lesson_plan');
+  }
+
+  function updateSupervisorEmail() { const s = document.getElementById('supTargetTeacher'); document.getElementById('supTargetEmail').value = s.options[s.selectedIndex].getAttribute('data-email'); }
+
+  async function runSupervisorAiAdvisor() {
+    const out = document.getElementById('supervisorAiAdvisorOutput'), teacher = document.getElementById('supTargetTeacher').value, notes = document.getElementById('supNotesInput').value || 'لا توجد ملاحظات إضافية بعد.';
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>مستشار الإشراف الذكي يحلل بيانات المعلمين...</b>';
+    await callApi('/api/analyze-students', { class_name: teacher, raw_notes: notes }, out, '✅ <b>تقرير الإشراف:</b>', 'analysis_report');
+  }
+
+  function sendSupervisorReportDirectly() {
+    const teacher = document.getElementById('supTargetTeacher').value, email = document.getElementById('supTargetEmail').value;
+    alert(`✅ تم إرسال التقرير الإشرافي بنجاح إلى البريد (${email}) الخاص بالمعلم (${teacher}) وتم تحديث السجل الأكاديمي.`);
+  }
+  function addNewTeacherModal() { const n = prompt("اسم المعلم الجديد:"); if(n) alert(`✨ تمت إضافة المعلم (${n}) بنجاح وإدراجه في لوحة المتابعة الإشرافية.`); }
+  function addNewStudentModal() { const n = prompt("اسم الطالب الجديد:"); if(n) alert(`✅ تمت إضافة الطالب (${n}) بنجاح.`); }
+
+  const monthNames = ['', 'الأول (سبتمبر)', 'الثاني (أكتوبر)', 'الثالث (نوفمبر)', 'الرابع (ديسمبر)', 'الخامس (يناير)', 'السادس (فبراير)'];
+  function checkMonthlyCompletion(selectElem) {
+    const row = selectElem.closest('tr'); let completedCount = 0;
+    row.querySelectorAll('.session-status').forEach(s => { if(s.value === 'completed') completedCount++; });
+    const statusCell = row.querySelector('.status-cell');
+    if(completedCount >= 4) {
+      row.style.backgroundColor = 'var(--card-bg)'; statusCell.style.color = 'var(--success)'; statusCell.innerHTML = 'مكتمل الشهري ⭐';
+      if(row === row.parentElement.lastElementChild && row.getAttribute('data-rolled') !== 'true') { row.setAttribute('data-rolled', 'true'); autoRolloverToNextMonth(row); }
+    } else { statusCell.style.color = 'var(--text-muted)'; statusCell.innerHTML = 'قيد المتابعة'; row.setAttribute('data-rolled', 'false'); }
+  }
+  function autoRolloverToNextMonth(r) {
+    const tbody = r.parentElement, student = r.getAttribute('data-student'), email = r.getAttribute('data-email'), phone = r.getAttribute('data-phone'), teacher = r.getAttribute('data-teacher');
+    const nextMonth = parseInt(r.getAttribute('data-month'), 10) + 1, monthLabel = monthNames[nextMonth] || `${nextMonth}`;
+    const row = document.createElement('tr');
+    ['student','email','phone','teacher'].forEach(k => row.setAttribute('data-'+k, {student,email,phone,teacher}[k]));
+    row.setAttribute('data-month', nextMonth); row.setAttribute('data-rolled', 'false');
+    const sel = `<td class="text-center"><select class="editable-cell session-status" onchange="checkMonthlyCompletion(this)"><option value="completed">✅ حضر</option><option value="absent" selected>❌ غائب</option></select></td>`;
+    row.innerHTML = `<td><b>${student}</b></td><td>${email}</td><td>${phone}</td><td>${teacher}</td><td><b>الشهر ${monthLabel}</b></td><td class="text-center" style="font-weight:700; color:var(--gold);">4</td>${sel}${sel}${sel}${sel}<td class="text-center status-cell" style="color:var(--text-muted); font-weight:700;">قيد المتابعة</td>`;
+    tbody.appendChild(row);
+    alert(`🔄 اكتمل الشهر بنجاح — تم إنشاء فاتورة الشهر الجديد وإضافة صف "الشهر ${monthLabel}" آليًا لـ ${student}، مع تحديث راتب ${teacher} تلقائيًا.`);
+  }
+
+  async function runManagementAiAdvisor() {
+    const out = document.getElementById('managementAiAdvisorOutput'); out.style.display = 'block'; out.innerHTML = '🤖 <b>مستشار الإدارة والمالية يحلل مؤشرات التشغيل والأجور...</b>';
+    await callApi('/api/financial-advisor', {}, out, '💰 <b>التقرير المالي:</b>', 'financial_report');
+  }
+  function exportExcel() { try { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('studentsTrackingTable')), "متابعة الحصص"); XLSX.writeFile(wb, "Madad_Management_Tracking.xlsx"); alert("✅ تم التصدير كملف إكسل بنجاح!"); } catch(e) { alert("❌ حدث خطأ أثناء التصدير."); } }
+
+  let curricula = [{ name:'منهج العربية بين يديك (مستوى المبتدئين)', level:'مستوى المبتدئين (A1-A2)', framework:'كراشن (Comprehensible Input) + TPRS' }];
+  function renderCurricula() {
+    const c = document.getElementById('curriculumListContainer'); if(!c) return;
+    c.innerHTML = curricula.map(x => `<div style="background:var(--card-bg); border:1px solid var(--border-color); padding:20px; border-radius:14px; margin-bottom:15px;"><h4 style="margin:0 0 8px 0; color:var(--text-primary); font-size:16px;">📖 ${x.name}</h4><p style="font-size:12.5px; color:var(--text-muted); margin:0 0 6px;">🎯 ${x.level} &nbsp;|&nbsp; 🧩 ${x.framework}</p></div>`).join('');
+  }
+  function addNewCurriculumModal() { const t = prompt("أدخل اسم المنهج الجديد:"); if(!t) return; curricula.push({ name:t, level:'غير محدد', framework:'تدرّج بالوحدات' }); renderCurricula(); }
+  function runCurriculumAiBuilderModal() { const t = prompt("أدخل موضوع المنهج المراد توليده آلياً:"); if(!t) return; curricula.push({ name:t, level:'بالذكاء الاصطناعي', framework:'كراشن + TPRS' }); renderCurricula(); }
+  async function generateCurriculumAiPlan() {
+    const topic = document.getElementById('curriculumAiPrompt').value, level = document.getElementById('curriculumLevelSelect').value, out = document.getElementById('curriculumAiOutput');
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>مساعد مداد يحلل المعايير...</b>';
+    await callApi('/api/curriculum-plan', { topic, level }, out, '📚 <b>الخطة الأكاديمية:</b>', 'curriculum_plan');
+  }
+  function addNewBroadcastModal() { const t = prompt("عنوان التعميم أو الرسالة:"); if(t) alert(`✅ تم إدراج التعميم (${t}) في قائمة الإرسال بنجاح.`); }
+  async function runBroadcastAiGenerator() {
+    const topic = document.getElementById('broadcastPromptInput').value, out = document.getElementById('broadcastAiOutput');
+    out.style.display = 'block'; out.innerHTML = '🤖 <b>مداد يصيغ رسائل مخصصة...</b>';
+    await callApi('/api/broadcast-message', { topic }, out, '📨 <b>نص التعميم:</b>', 'broadcast');
+  }
+  async function runExecutiveAiAnalytics() {
+    const out = document.getElementById('executiveAnalyticsOutput'); out.style.display = 'block'; out.innerHTML = '🤖 <b>محلل البيانات التنفيذي يفحص أداء المعاهد...</b>';
+    await callApi('/api/executive-analytics', {}, out, '📈 <b>التقرير التنفيذي:</b>', 'executive_report');
+  }
+  function exportReportsExcel() { try { const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('kpiReportsTable')), "مؤشرات الأداء"); XLSX.writeFile(wb, "Madad_Institution_KPIs.xlsx"); alert("✅ تم تصدير تقرير المؤسسة الشامل بنجاح!"); } catch(e) { alert("❌ حدث خطأ أثناء التصدير."); } }
+
+  // ===== قسم القرآن الكريم =====
+  const quranMotivations = ["«خَيْرُكُمْ مَنْ تَعَلَّمَ القُرْآنَ وَعَلَّمَهُ» (رواه البخاري). واصل مسيرتك المباركة!","«اقْرَءُوا القُرْآنَ فإنَّه يأتي يوم القيامة شفيعاً لأصحابه» (رواه مسلم).","«الْمَاهِرُ بِالْقُرْآنِ مَعَ السَّفَرَةِ الْكِرَامِ الْبَرَرَةِ» (متفق عليه)."];
+  const surahMeta = [["الفاتحة",7,"مكية"],["البقرة",286,"مدنية"],["آل عمران",200,"مدنية"],["النساء",176,"مدنية"],["المائدة",120,"مدنية"],["الأنعام",165,"مكية"],["الأعراف",206,"مكية"],["الأنفال",75,"مدنية"],["التوبة",129,"مدنية"],["يونس",109,"مكية"],["هود",123,"مكية"],["يوسف",111,"مكية"],["الرعد",43,"مدنية"],["إبراهيم",52,"مكية"],["الحجر",99,"مكية"],["النحل",128,"مدنية"],["الإسراء",111,"مكية"],["الكهف",110,"مكية"],["مريم",98,"مكية"],["طه",135,"مكية"],["الأنبياء",112,"مكية"],["الحج",78,"مدنية"],["المؤمنون",118,"مكية"],["النور",64,"مدنية"],["الفرقان",77,"مكية"],["الشعراء",227,"مكية"],["النمل",93,"مكية"],["القصص",88,"مكية"],["العنكبوت",69,"مكية"],["الروم",60,"مكية"],["لقمان",34,"مكية"],["السجدة",30,"مكية"],["الأحزاب",73,"مدنية"],["سبأ",54,"مكية"],["فاطر",45,"مكية"],["يس",83,"مكية"],["الصافات",182,"مكية"],["ص",88,"مكية"],["الزمر",75,"مكية"],["غافر",85,"مكية"],["فصلت",54,"مكية"],["الشورى",53,"مكية"],["الزخرف",89,"مكية"],["الدخان",59,"مكية"],["الجاثية",37,"مكية"],["الأحقاف",35,"مكية"],["محمد",38,"مدنية"],["الفتح",29,"مدنية"],["الحجرات",18,"مدنية"],["ق",45,"مكية"],["الذاريات",60,"مكية"],["الطور",49,"مكية"],["النجم",62,"مكية"],["القمر",55,"مكية"],["الرحمن",78,"مدنية"],["الواقعة",96,"مكية"],["الحديد",29,"مدنية"],["المجادلة",22,"مدنية"],["الحشر",24,"مدنية"],["الممتحنة",13,"مدنية"],["الصف",14,"مدنية"],["الجمعة",11,"مدنية"],["المنافقون",11,"مدنية"],["التغابن",18,"مدنية"],["الطلاق",12,"مدنية"],["التحريم",12,"مدنية"],["الملك",30,"مكية"],["القلم",52,"مكية"],["الحاقة",52,"مكية"],["المعارج",44,"مكية"],["نوح",28,"مكية"],["الجن",28,"مكية"],["المزمل",20,"مكية"],["المدثر",56,"مكية"],["القيامة",40,"مكية"],["الإنسان",31,"مدنية"],["المرسلات",50,"مكية"],["النبأ",40,"مكية"],["النازعات",46,"مكية"],["عبس",42,"مكية"],["التكوير",29,"مكية"],["الانفطار",19,"مكية"],["المطففين",36,"مكية"],["الانشقاق",25,"مكية"],["البروج",22,"مكية"],["الطارق",17,"مكية"],["الأعلى",19,"مكية"],["الغاشية",26,"مكية"],["الفجر",30,"مكية"],["البلد",20,"مكية"],["الشمس",15,"مكية"],["الليل",21,"مكية"],["الضحى",11,"مكية"],["الشرح",8,"مكية"],["التين",8,"مكية"],["العلق",19,"مكية"],["القدر",5,"مكية"],["البينة",8,"مدنية"],["الزلزلة",8,"مدنية"],["العاديات",11,"مكية"],["القارعة",11,"مكية"],["التكاثر",8,"مكية"],["العصر",3,"مكية"],["الهمزة",9,"مكية"],["الفيل",5,"مكية"],["قريش",4,"مكية"],["الماعون",7,"مكية"],["الكوثر",3,"مكية"],["الكافرون",6,"مكية"],["النصر",3,"مدنية"],["المسد",5,"مكية"],["الإخلاص",4,"مكية"],["الفلق",5,"مكية"],["الناس",6,"مكية"]];
+  const reviewSet = new Set([2,36,55,56]); const doneSet = new Set([1,67,78,79,80]);
+  const defaultSurahs = surahMeta.map((m,i) => { const n=i+1; return { n, name:m[0], a:m[1], t:m[2], s: (doneSet.has(n)||n>=87)?'done':(reviewSet.has(n)?'review':'pending') }; });
+
+  let quranTeachersList = [{ id:'1', name:'الشيخ عبد الرحمن أحمد', email:'teacher1@madad-ai.com' },{ id:'2', name:'أستاذة مريم خالد', email:'teacher2@madad-ai.com' }];
+  let quranStudentsList = [
+    { id:'q1', name:'عمر أحمد', teacherId:'1', email:'omar.h@student-madad.com', newSave:'سورة البقرة (1-20)', newGrade:'ممتاز', reviewStop:'توقف عند آل عمران (آية 50)', reviewGrade:'جيد جداً', surahs: JSON.parse(JSON.stringify(defaultSurahs)) },
+    { id:'q2', name:'فاطمة الزهراء', teacherId:'2', email:'fatma.z@student-madad.com', newSave:'سورة آل عمران (50-80)', newGrade:'جيد', reviewStop:'توقف عند النساء (آية 30)', reviewGrade:'مقبول', surahs: JSON.parse(JSON.stringify(defaultSurahs)) }
+  ];
+
+  function renderQuranRoleTabs() {
+    const c = document.getElementById('quranRoleTabsContainer'); if(!c) return;
+    let html = quranTeachersList.map((t,i) => `<button type="button" class="role-btn ${i===0?'active-role':''}" onclick="switchQuranRole('teacher${t.id}', this)">👨‍🏫 المعلم: ${t.name}</button>`).join('');
+    html += `<button type="button" class="role-btn" onclick="switchQuranRole('supervisor', this)">👔 المشرف العام (إدارة شاملة)</button>`;
+    c.innerHTML = html;
+    const sel = document.getElementById('quranSupervisorTeacherSelect');
+    if(sel) sel.innerHTML = quranTeachersList.map(t => `<option value="${t.name}" data-email="${t.email}">${t.name}</option>`).join('');
+  }
+  function renderQuranTeachersStudentsTable() {
+    const tbody = document.getElementById('quranTeachersStudentsBody'); if(!tbody) return; tbody.innerHTML = '';
+    quranStudentsList.forEach(st => {
+      const tr = document.createElement('tr'); tr.setAttribute('data-teacher-id', st.teacherId);
+      tr.innerHTML = `<td><select class="editable-cell" onchange="updateQuranStudentTeacher('${st.id}', this.value)" style="font-weight:700;">${quranTeachersList.map(t => `<option value="${t.id}" ${t.id===st.teacherId?'selected':''}>${t.name}</option>`).join('')}</select></td>
+        <td><input type="text" class="editable-cell" value="${st.name}" style="font-weight:700;" onchange="updateQuranField('${st.id}','name',this.value); renderQuranAll();"></td>
+        <td><input type="email" class="editable-cell" value="${st.email}" onchange="updateQuranField('${st.id}','email',this.value)"></td>
+        <td class="text-center quran-supervisor-only" style="display:none;"><button style="background:none;border:none;cursor:pointer;font-size:16px;" onclick="deleteQuranStudent('${st.id}')">🗑️</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  function gradeOptions(sel) { return ['ممتاز','جيد جداً','جيد','مقبول','يعاد'].map(g => `<option value="${g}" ${sel===g?'selected':''}>${{'ممتاز':'🌟','جيد جداً':'⭐','جيد':'👍','مقبول':'📝','يعاد':'🔄'}[g]} ${g}</option>`).join(''); }
+  function renderQuranIndependentStudentTables() {
+    const c = document.getElementById('quranIndependentStudentContainer'); if(!c) return; c.innerHTML = '';
+    quranStudentsList.forEach(st => {
+      let ayat = 0, done = 0; st.surahs.forEach(s => { if(s.s==='done'){ ayat += s.a; done++; } else if(s.s==='review'){ ayat += s.a*0.5; } });
+      const pct = ((ayat/6236)*100).toFixed(1);
+      const card = document.createElement('div'); card.className = 'student-card-quran quran-student-card'; card.setAttribute('data-teacher-id', st.teacherId);
+      const rows = st.surahs.map((su,i) => `<tr><td class="text-center">${su.n}</td><td><b>${su.name}</b></td><td class="text-center">${su.a}</td><td class="text-center">${su.t}</td><td class="text-center"><select class="status-select ${su.s==='done'?'status-done':(su.s==='review'?'status-review':'status-pending')}" onchange="updateQuranSurahStatus('${st.id}', ${i}, this)"><option value="done" ${su.s==='done'?'selected':''}>■ متقن (100%)</option><option value="review" ${su.s==='review'?'selected':''}>■ مراجعة (50%)</option><option value="pending" ${su.s==='pending'?'selected':''}>■ انتظار (0%)</option></select></td></tr>`).join('');
+      card.innerHTML = `<h3 style="color:var(--gold); margin-top:0; font-size:19px; border-bottom:2px solid var(--gold); padding-bottom:10px;">👤 ملف الطالب المستقل: ${st.name}</h3>
+        <div style="background:var(--accent-sand); padding:15px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:18px;"><div style="display:flex; justify-content:space-between; font-weight:700; font-size:13px; flex-wrap:wrap; gap:10px; margin-bottom:6px;"><span>السور المحفوظة: ${done} من 114 سورة</span><span style="color:var(--danger);">السور المتبقية: ${114-done} سورة</span><span style="color:var(--gold-dark);">نسبة الإنجاز: ${pct}%</span></div><div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">المحفوظ تقديراً: ${Math.round(ayat)} آية من 6236 آية</div><div class="progress-container"><div class="progress-bar" style="width:${pct}%;">${pct}%</div></div></div>
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div style="background:var(--accent-sand); padding:14px; border-radius:10px; border:1px solid var(--border-color);"><label style="color:var(--gold-dark); font-weight:700;">📌 الحفظ الجديد (ما يحفظه الآن):</label><input type="text" class="editable-cell" value="${st.newSave}" style="background:var(--card-bg); margin-bottom:10px;" onchange="updateQuranField('${st.id}','newSave',this.value)"><label>تقييم الحفظ الجديد:</label><select class="editable-cell" style="background:var(--card-bg); font-weight:700;" onchange="updateQuranField('${st.id}','newGrade',this.value)">${gradeOptions(st.newGrade)}</select></div>
+          <div style="background:var(--accent-sand); padding:14px; border-radius:10px; border:1px solid var(--border-color);"><label style="color:#2980B9; font-weight:700;">🔄 أين توقف في المراجعة؟</label><input type="text" class="editable-cell" value="${st.reviewStop}" style="background:var(--card-bg); margin-bottom:10px;" onchange="updateQuranField('${st.id}','reviewStop',this.value)"><label>تقييم المراجعة:</label><select class="editable-cell" style="background:var(--card-bg); font-weight:700;" onchange="updateQuranField('${st.id}','reviewGrade',this.value)">${gradeOptions(st.reviewGrade)}</select></div>
+        </div>
+        <h4 style="color:var(--text-muted); margin-bottom:6px; font-size:14px;">📚 جدول الفهرس الخاص بـ (${st.name}) - الـ 114 سورة:</h4>
+        <div style="overflow-x:auto; max-height:340px; overflow-y:auto; border:1px solid var(--border-color); border-radius:10px;"><table class="supervision-table" style="margin-top:0;"><thead><tr><th style="width:10%;">رقم</th><th style="width:30%;">اسم السورة</th><th style="width:15%;">الآيات</th><th style="width:20%;">النوع</th><th style="width:25%;">حالة التقدم</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      c.appendChild(card);
+    });
+  }
+  function updateQuranField(id, f, v) { const s = quranStudentsList.find(x=>x.id===id); if(s){ s[f]=v; scheduleFirestoreSave(); } }
+  function updateQuranStudentTeacher(id, tid) { const s = quranStudentsList.find(x=>x.id===id); if(s){ s.teacherId=tid; renderQuranAll(); scheduleFirestoreSave(); } }
+  function updateQuranSurahStatus(id, idx, sel) { const s = quranStudentsList.find(x=>x.id===id); if(s){ s.surahs[idx].s = sel.value; renderQuranIndependentStudentTables(); scheduleFirestoreSave(); } }
+  function renderQuranAll() { renderQuranRoleTabs(); renderQuranTeachersStudentsTable(); renderQuranIndependentStudentTables(); }
+  function switchQuranRole(role, btn) {
+    document.querySelectorAll('#quranRoleTabsContainer .role-btn').forEach(b => b.classList.remove('active-role')); if(btn) btn.classList.add('active-role');
+    const supSection = document.getElementById('quranSupervisorEvaluationSection'), supFields = document.querySelectorAll('.quran-supervisor-only'), rows = document.querySelectorAll('#quranTeachersStudentsBody tr'), cards = document.querySelectorAll('#quranIndependentStudentContainer .quran-student-card'), title = document.getElementById('quranTeachersStudentsTitle');
+    if(role === 'supervisor') { supSection.style.display='block'; supFields.forEach(e=>e.style.display=''); title.innerText='👨‍🏫 إدارة المعلمين وطلاب الحلقات (الإشراف الشامل)'; rows.forEach(r=>r.style.display=''); cards.forEach(c=>c.style.display='block'); }
+    else { supSection.style.display='none'; supFields.forEach(e=>e.style.display='none'); const tid = role.replace('teacher',''), t = quranTeachersList.find(x=>x.id===tid); title.innerText = t ? `👨‍🏫 حلقة المعلم: ${t.name}` : '👨‍🏫 حلقة المعلم'; rows.forEach(r=>r.style.display = r.getAttribute('data-teacher-id')===tid ? '' : 'none'); cards.forEach(c=>c.style.display = c.getAttribute('data-teacher-id')===tid ? 'block' : 'none'); }
+  }
+  function addNewQuranTeacherModal() { const n = prompt("أدخل اسم معلم الحلقة الجديد:"); if(!n) return; const e = prompt("البريد الإلكتروني:", "teacher@madad-ai.com"); quranTeachersList.push({ id:(quranTeachersList.length+1).toString(), name:n, email:e }); renderQuranAll(); alert(`✨ تم إضافة معلم الحلقة (${n}) بنجاح.`); }
+  function addNewQuranStudent() { const n = prompt("اسم الطالب الحافظ الجديد:"); if(!n) return; const e = prompt("البريد الإلكتروني:", "student@madad-ai.com"); quranStudentsList.push({ id:'q'+Date.now(), name:n, teacherId: quranTeachersList[0]?quranTeachersList[0].id:'1', email:e, newSave:'سورة الفاتحة', newGrade:'ممتاز', reviewStop:'البداية', reviewGrade:'ممتاز', surahs: JSON.parse(JSON.stringify(defaultSurahs)) }); renderQuranAll(); alert(`✨ تم إضافة الطالب (${n}) بنجاح وتخصيص ملفه المستقل.`); }
+  function deleteQuranStudent(id) { if(!confirm("هل أنت متأكد من حذف هذا الطالب؟")) return; quranStudentsList = quranStudentsList.filter(s=>s.id!==id); renderQuranAll(); }
+  async function submitQuranReport() {
+    const btn = document.getElementById('quranBtn'), loading = document.getElementById('quranLoading'), out = document.getElementById('quranOutput');
+    btn.disabled = true; loading.style.display = 'block'; out.style.display = 'none';
+    const t = document.getElementById('quranSupervisorTeacherSelect').value, notes = document.getElementById('tajweedNotes').value || 'لا توجد ملاحظات إضافية.';
+    await callApi('/api/analyze-students', { class_name:'حلقة تحفيظ', raw_notes:`معلم: ${t}, ملاحظات: ${notes}` }, out, '✅ تم اعتماد التقرير وإرساله لبريد المعلم:', 'analysis_report');
+    loading.style.display = 'none'; btn.disabled = false;
+  }
+  function updateTeacherEmailQuran() { const s = document.getElementById('quranSupervisorTeacherSelect'), e = s.options[s.selectedIndex]?.getAttribute('data-email'); if(e) document.getElementById('quranEmail').value = e; }
+
+  // ===== متابعة الطلاب والرواتب =====
+  let supervisionTeachers = [{ id:'1', name:'أحمد محمد', rate:25, email:'ahmed.m@madad-ai.com', phone:'+201000000001' },{ id:'2', name:'فاطمة علي', rate:30, email:'fatma.a@madad-ai.com', phone:'+201000000002' }];
+  const USD_TO_EGP_RATE = 50.98; let currentCurrency = 'USD', supervisionGlobalMaxSessions = 4, trackingMode = 'sessions';
+  let supervisionStudents = [
+    { id:'sv1', name:'أحمد جونسون', teacherId:'1', target:4, level:'العربية بين يديك (الكتاب الأول)', notes:'أداء متميز بالنطق، يحتاج مراجعة أحرف التفخيم.', sessions:[{date:'2026-09-01',status:'completed'},{date:'2026-09-05',status:'completed'},{date:'2026-09-08',status:'completed'},{date:'2026-09-12',status:'absent'}] },
+    { id:'sv2', name:'سارة لي', teacherId:'2', target:6, level:'الدراسات الإسلامية - أساسي', notes:'تفاعل ممتاز في الحوار الصفي.', sessions:[{date:'2026-09-02',status:'completed'},{date:'2026-09-06',status:'completed'},{date:'2026-09-09',status:'completed'},{date:'2026-09-13',status:'completed'},{date:'2026-09-16',status:'postponed'},{date:'2026-09-19',status:'absent'}] }
+  ];
+  let dailyHoursLog = [{ id:'dh1', teacherId:'1', date:'2026-09-01', hours:4, shift:'دوام كامل', notes:'' },{ id:'dh2', teacherId:'1', date:'2026-09-02', hours:4, shift:'دوام كامل', notes:'' },{ id:'dh3', teacherId:'2', date:'2026-09-01', hours:3, shift:'دوام جزئي', notes:'' }];
+  function recomputeGlobalMaxSessions() { let m = 1; supervisionStudents.forEach(s => { if(s.target>m) m=s.target; if(s.sessions.length>m) m=s.sessions.length; }); supervisionGlobalMaxSessions = m; }
+  function ensureSessionsLength(st) { while(st.sessions.length < supervisionGlobalMaxSessions) st.sessions.push({date:'', status:'completed'}); }
+  function renderTrackingTable(prefix, opts) {
+    const head = document.getElementById(prefix+'TrackingHead'), body = document.getElementById(prefix+'TrackingBody'); if(!head||!body) return;
+    const students = opts.filterTeacherId ? supervisionStudents.filter(s=>s.teacherId===opts.filterTeacherId) : supervisionStudents;
+    let h = `<th style="min-width:150px;">👤 اسم الطالب</th><th style="min-width:130px;">👨‍🏫 المعلم المسؤول</th><th style="min-width:110px; background:var(--accent-sand); color:var(--gold-dark); text-align:center;">🎯 المستهدف شهرياً</th>`;
+    for(let i=1;i<=supervisionGlobalMaxSessions;i++) h += `<th style="min-width:135px; background:var(--accent-sand);">📌 الحصة ${i}</th>`;
+    h += `<th style="min-width:150px;">📖 المستوى/المادة</th><th style="min-width:160px;">📝 ملاحظات</th>`; if(opts.showDelete) h += `<th style="min-width:70px;">حذف</th>`; head.innerHTML = h; body.innerHTML = '';
+    students.forEach(st => {
+      ensureSessionsLength(st); const isComplete = st.sessions.filter(s=>s.status==='completed').length >= st.target;
+      const main = document.createElement('tr'); main.className = 'student-main-row-track' + (isComplete?' completed-target-row':'');
+      main.innerHTML = `<td rowspan="2"><input type="text" class="editable-cell" value="${st.name}" style="font-weight:700;" onchange="updateTrackingField('${st.id}','name',this.value)"></td>
+        <td rowspan="2"><select class="editable-cell" onchange="updateTrackingRowTeacher('${st.id}', this.value)">${supervisionTeachers.map(t=>`<option value="${t.id}" ${t.id===st.teacherId?'selected':''}>${t.name}</option>`).join('')}</select></td>
+        <td rowspan="2"><input type="number" class="editable-cell target-input-track" value="${st.target}" min="1" onchange="onTrackingTargetChange('${st.id}', this.value)"></td>
+        <td colspan="${supervisionGlobalMaxSessions}" style="background:var(--accent-sand); text-align:center; font-size:12px; color:var(--text-muted); font-weight:600;">📌 مواعيد الحصص وحالاتها (الصف الثاني أدناه)</td>
+        <td rowspan="2"><input type="text" class="editable-cell" value="${st.level}" onchange="updateTrackingField('${st.id}','level',this.value)"></td>
+        <td rowspan="2"><textarea class="editable-cell" rows="2" onchange="updateTrackingField('${st.id}','notes',this.value)">${st.notes}</textarea></td>
+        ${opts.showDelete?`<td rowspan="2" class="text-center"><button style="background:none;border:none;cursor:pointer;font-size:16px;" onclick="deleteSupervisionStudent('${st.id}')">🗑️</button></td>`:''}`;
+      body.appendChild(main);
+      const sub = document.createElement('tr'); sub.className = 'student-sub-row-track' + (isComplete?' completed-target-row':''); let sh = '';
+      for(let i=0;i<supervisionGlobalMaxSessions;i++){ const se = st.sessions[i]; sh += `<td class="session-cell-track"><input type="date" class="editable-cell" value="${se.date}" onchange="updateTrackingSession('${st.id}', ${i}, 'date', this.value)"><select class="editable-cell" onchange="updateTrackingSession('${st.id}', ${i}, 'status', this.value)"><option value="completed" ${se.status==='completed'?'selected':''}>✅ حضر</option><option value="absent" ${se.status==='absent'?'selected':''}>❌ غائب</option><option value="postponed" ${se.status==='postponed'?'selected':''}>⏳ مؤجلة</option></select></td>`; }
+      sub.innerHTML = sh; body.appendChild(sub);
+    });
+  }
+  function updateTrackingField(id,f,v){ const s=supervisionStudents.find(x=>x.id===id); if(s){ s[f]=v; scheduleFirestoreSave(); } }
+  function updateTrackingRowTeacher(id,tid){ const s=supervisionStudents.find(x=>x.id===id); if(s){ s.teacherId=tid; refreshAllTrackingViews(); scheduleFirestoreSave(); } }
+  function updateTrackingSession(id,i,f,v){ const s=supervisionStudents.find(x=>x.id===id); if(s){ s.sessions[i][f]=v; refreshAllTrackingViews(); scheduleFirestoreSave(); } }
+  function onTrackingTargetChange(id,v){ const s=supervisionStudents.find(x=>x.id===id); if(s){ s.target=parseInt(v)||1; recomputeGlobalMaxSessions(); refreshAllTrackingViews(); scheduleFirestoreSave(); } }
+  function addManualSessionColumnForAll(){ supervisionGlobalMaxSessions++; refreshAllTrackingViews(); scheduleFirestoreSave(); }
+  function addNewSupervisionStudent(){ const n=prompt('اسم الطالب الجديد:'); if(!n) return; const tid = supervisionTeachers[0]?supervisionTeachers[0].id:'1', target = parseInt(prompt('عدد الحصص المستهدف شهريًا (4 / 6 / 8 / 12):','4'))||4; supervisionStudents.push({ id:'sv'+Date.now(), name:n, teacherId:tid, target, level:'', notes:'', sessions:[] }); recomputeGlobalMaxSessions(); refreshAllTrackingViews(); scheduleFirestoreSave(); alert(`✅ تمت إضافة الطالب (${n}) بنجاح للجدول.`); }
+  function deleteSupervisionStudent(id){ if(!confirm('هل أنت متأكد من حذف هذا الطالب من الجدول؟')) return; supervisionStudents = supervisionStudents.filter(s=>s.id!==id); refreshAllTrackingViews(); scheduleFirestoreSave(); }
+  function fmtMoney(total){ return (currentCurrency==='EGP'?'EGP ':'$') + (currentCurrency==='EGP'?(total*USD_TO_EGP_RATE):total).toFixed(2); }
+  function calculateSupervisionPayroll(){ const c={}; supervisionTeachers.forEach(t=>c[t.id]=0); supervisionStudents.forEach(st=>st.sessions.forEach(s=>{ if(s.status==='completed'&&c[st.teacherId]!==undefined) c[st.teacherId]++; })); supervisionTeachers.forEach(t=>{ const n=c[t.id]||0, a=document.querySelector(`.teacher-completed-count[data-teacher="${t.id}"]`), b=document.querySelector(`.teacher-total[data-teacher="${t.id}"]`); if(a) a.innerText=n+' حصة'; if(b) b.innerText=fmtMoney(n*t.rate); }); }
+  function calculateHoursPayroll(){ const c={}; supervisionTeachers.forEach(t=>c[t.id]=0); dailyHoursLog.forEach(e=>{ if(c[e.teacherId]!==undefined) c[e.teacherId]+=e.hours; }); supervisionTeachers.forEach(t=>{ const h=c[t.id]||0, a=document.querySelector(`.teacher-completed-count[data-teacher="${t.id}"]`), b=document.querySelector(`.teacher-total[data-teacher="${t.id}"]`); if(a) a.innerText=h+' ساعة'; if(b) b.innerText=fmtMoney(h*t.rate); }); }
+  function refreshHoursOrSessionsPayroll(){ const ch=document.getElementById('countHeader'); if(trackingMode==='sessions'){ calculateSupervisionPayroll(); if(ch) ch.innerText='عدد الحصص المنجزة'; } else { calculateHoursPayroll(); if(ch) ch.innerText='إجمالي الساعات'; } }
+  function setTrackingMode(m){ trackingMode=m; document.getElementById('modeBtnSessions').classList.toggle('active-mode',m==='sessions'); document.getElementById('modeBtnHours').classList.toggle('active-mode',m==='hours'); document.getElementById('sessionsModeBlock').style.display=m==='sessions'?'block':'none'; document.getElementById('hoursModeBlock').style.display=m==='hours'?'block':'none'; refreshHoursOrSessionsPayroll(); }
+  function renderDailyHoursTable(){ const tb=document.getElementById('dailyHoursBody'); if(!tb) return; tb.innerHTML = dailyHoursLog.map(e=>{ const t=supervisionTeachers.find(x=>x.id===e.teacherId); return `<tr><td>${t?t.name:'—'}</td><td>${e.date}</td><td class="text-center">${e.hours}</td><td>${e.shift}</td><td>${e.notes||''}</td><td class="text-center"><button style="background:none;border:none;cursor:pointer;font-size:15px;" onclick="deleteDailyHoursEntry('${e.id}')">🗑️</button></td></tr>`; }).join(''); }
+  function addDailyHoursEntry(){ if(!supervisionTeachers.length){ alert('أضف معلماً أولاً.'); return; } const nm=prompt('اسم المعلم:\n'+supervisionTeachers.map(t=>t.name).join(' / '), supervisionTeachers[0].name), t=supervisionTeachers.find(x=>x.name===nm); if(!t){ alert('لم يتم العثور على معلم بهذا الاسم.'); return; } const date=prompt('التاريخ (YYYY-MM-DD):', new Date().toISOString().slice(0,10)), hours=parseFloat(prompt('عدد الساعات:','4'))||0, shift=prompt('نوع الدوام (دوام كامل / دوام جزئي):','دوام كامل'); dailyHoursLog.push({ id:'dh'+Date.now(), teacherId:t.id, date, hours, shift, notes:'' }); renderDailyHoursTable(); refreshHoursOrSessionsPayroll(); }
+  function deleteDailyHoursEntry(id){ dailyHoursLog = dailyHoursLog.filter(e=>e.id!==id); renderDailyHoursTable(); refreshHoursOrSessionsPayroll(); }
+  function rebuildSupervisionTeachersTable(){ const tb=document.getElementById('supervisionTeachersBody'); if(!tb) return; tb.innerHTML = supervisionTeachers.map(t=>`<tr><td><b>${t.name}</b></td><td>${t.email}<br><span style="font-size:11px; color:var(--text-muted);">${t.phone||''}</span></td><td><input type="number" class="editable-cell teacher-rate" data-teacher="${t.id}" value="${currentCurrency==='EGP'?(t.rate*USD_TO_EGP_RATE).toFixed(2):t.rate}" onchange="updateSupervisionBaseRate('${t.id}', this.value)"></td><td class="text-center teacher-completed-count" data-teacher="${t.id}">0</td><td><b style="color:var(--gold-dark);" class="teacher-total" data-teacher="${t.id}">$0</b></td><td class="text-center"><button onclick="alert('⏰ تم إرسال تنبيه واتساب لـ ${t.name}')" style="background:#25D366; color:#fff; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:12px;">⏰ تنبيه</button></td></tr>`).join(''); refreshHoursOrSessionsPayroll(); }
+  function updateSupervisionBaseRate(id,v){ const t=supervisionTeachers.find(x=>x.id===id); if(t){ t.rate = currentCurrency==='EGP' ? (parseFloat(v)/USD_TO_EGP_RATE) : (parseFloat(v)||0); refreshHoursOrSessionsPayroll(); } }
+  function toggleCurrencyRate(){ currentCurrency=document.getElementById('currencySelector').value; document.getElementById('rateHeader').innerText = currentCurrency==='EGP'?'سعر الساعة (EGP)':'سعر الساعة ($)'; document.getElementById('totalHeader').innerText = currentCurrency==='EGP'?'إجمالي الراتب (EGP)':'إجمالي الراتب ($)'; rebuildSupervisionTeachersTable(); }
+  function addNewSupervisionTeacher(){ const n=prompt('اسم المعلم الجديد:'); if(!n) return; const e=prompt('البريد الإلكتروني:','teacher@madad-ai.com'), p=prompt('رقم الهاتف (واتساب):','+201000000000'), r=prompt(`سعر الساعة (${currentCurrency==='EGP'?'EGP':'$'}):`, currentCurrency==='EGP'?'1270':'25'); supervisionTeachers.push({ id:'t'+Date.now(), name:n, rate: currentCurrency==='EGP'?(parseFloat(r)/USD_TO_EGP_RATE):(parseFloat(r)||25), email:e, phone:p }); refreshAllTrackingViews(); alert(`✨ تمت إضافة المعلم (${n}) بنجاح.`); }
+  function refreshAllTrackingViews(){ renderTrackingTable('supervisor',{showDelete:true}); renderTrackingTable('teacher',{showDelete:false, filterTeacherId:'1'}); renderDailyHoursTable(); rebuildSupervisionTeachersTable(); }
+  function exportSupervisionExcel(){ try { const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('supervisorTrackingTable')), "متابعة الطلاب"); XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('supervisionTeachersTable')), "شؤون المعلمين والرواتب"); XLSX.writeFile(wb, "Madad_Supervision_Tracking.xlsx"); alert("✅ تم تصدير الجدول بنجاح!"); } catch(e){ alert("❌ حدث خطأ أثناء التصدير."); } }
+
+  // ===== حفظ وتحميل البيانات من Firebase Firestore =====
+  // يحفظ كل بيانات المؤسسة (طلاب، معلمون، حلقات قرآن) تلقائياً في السحابة
+// ================================================================
+// 💾 نظام الحفظ المحلي الفوري والآمن (Local State Cache & Auto-Save)
+// ================================================================
+
+const LOCAL_STORAGE_KEY = 'madad_offline_cache_v2';
+
+// 1. حفظ جميع بيانات المؤسسة محلياً في المتصفح فوراً
+function saveToLocalCache() {
+  try {
+    const cacheData = {
+      supervisionStudents,
+      supervisionTeachers,
+      dailyHoursLog,
+      quranStudentsList: quranStudentsList.map(s => ({ ...s })),
+      quranTeachersList,
+      curricula: typeof curricula !== 'undefined' ? curricula : [],
+      broadcastLog: typeof broadcastLog !== 'undefined' ? broadcastLog : [],
+      lastSaved: new Date().toISOString()
+    };
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cacheData));
+    showToast('💾 تم الحفظ محلياً بنجاح ✓');
+  } catch (e) {
+    console.warn('فشل الحفظ المحلي:', e);
+  }
+}
+
+// 2. استرجاع البيانات محلياً عند فتح الصفحة
+function loadFromLocalCache() {
+  try {
+    const cached = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!cached) return false;
+
+    const data = JSON.parse(cached);
+    if (data.supervisionStudents?.length) supervisionStudents = data.supervisionStudents;
+    if (data.supervisionTeachers?.length) supervisionTeachers = data.supervisionTeachers;
+    if (data.dailyHoursLog?.length) dailyHoursLog = data.dailyHoursLog;
+    if (data.quranStudentsList?.length) quranStudentsList = data.quranStudentsList;
+    if (data.quranTeachersList?.length) quranTeachersList = data.quranTeachersList;
+    if (data.curricula?.length && typeof curricula !== 'undefined') curricula = data.curricula;
+    if (data.broadcastLog?.length && typeof broadcastLog !== 'undefined') broadcastLog = data.broadcastLog;
+
+    console.log('📦 تم استرجاع البيانات من التخزين المحلي المؤقت بنجاح.');
+    return true;
+  } catch (e) {
+    console.warn('خطأ في استرجاع التخزين المحلي:', e);
+    return false;
+  }
+}
+
+// 3. دالة الجدولة الموحدة للحفظ (تدمج الحفظ المحلي + الحفظ السحابي في Firebase)
+let globalSaveTimer = null;
+function scheduleSmartSave() {
+  saveToLocalCache();
+  if (db && currentUser && !currentUser.isAnonymous) {
+    clearTimeout(globalSaveTimer);
+    globalSaveTimer = setTimeout(() => {
+      saveToFirestore(currentUser.uid);
+    }, 2000);
+  }
+}
+
+// للحفاظ على توافقية الدوال القديمة
+function scheduleFirestoreSave() {
+  scheduleSmartSave();
+}
+  async function saveToFirestore(uid) {
+    if (!db || !uid) return;
+    try {
+      await db.collection('madad_institutions').doc(uid).set({
+        supervisionStudents,
+        supervisionTeachers,
+        dailyHoursLog,
+        quranStudentsList: quranStudentsList.map(s => ({ ...s, surahs: s.surahs })),
+        quranTeachersList,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        ownerEmail: currentUser.email || ''
+      });
+      showToast('💾 تم الحفظ التلقائي في السحابة ✓');
+    } catch(e) { console.warn('Firestore save error:', e); }
+  }
+
+  async function loadFromFirestore(uid) {
+    if (!db || !uid) return;
+    try {
+      const doc = await db.collection('madad_institutions').doc(uid).get();
+      if (!doc.exists) return;
+      const d = doc.data();
+      if (d.supervisionStudents?.length)  supervisionStudents  = d.supervisionStudents;
+      if (d.supervisionTeachers?.length)  supervisionTeachers  = d.supervisionTeachers;
+      if (d.dailyHoursLog?.length)        dailyHoursLog        = d.dailyHoursLog;
+      if (d.quranStudentsList?.length)    quranStudentsList    = d.quranStudentsList;
+      if (d.quranTeachersList?.length)    quranTeachersList    = d.quranTeachersList;
+      recomputeGlobalMaxSessions();
+      refreshAllTrackingViews();
+      renderQuranAll();
+      showToast('☁️ تم تحميل بياناتك من السحابة');
+    } catch(e) { console.warn('Firestore load error:', e); }
+  }
+
+  // ===== تصدير كل البيانات إلى Google Sheets =====
+  // يُصدِّر إلى الحساب الذي سجّل الدخول به (Gouda.yousuf@gmail.com)
+  // ضع هنا رابط Google Apps Script بعد نشره (راجع madad_apps_script.gs)
+  const APPS_SCRIPT_URL = '';  // مثال: 'https://script.google.com/macros/s/AKfycby.../exec'
+  const SHEETS_CLIENT_ID = ''; // اختياري: Client ID من Google Cloud Console
+  let gapiReady = false;
+
+  async function exportAllToGoogleSheets() {
+    showToast('📊 جارٍ تجهيز البيانات...');
+    // المسار 1: Google Apps Script (الأفضل — بدون إعداد إضافي)
+    if (APPS_SCRIPT_URL) {
+      await sendToAppsScript();
+      return;
+    }
+    // المسار 2: gapi مع OAuth (يحتاج Client ID)
+    const hasGapi = typeof gapi !== 'undefined' && SHEETS_CLIENT_ID;
+    if (hasGapi) {
+      if (!gapiReady) {
+        gapi.load('client:auth2', async () => {
+          await gapi.client.init({ clientId: SHEETS_CLIENT_ID, scope: 'https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file' });
+          await gapi.client.load('sheets', 'v4');
+          gapiReady = true;
+          await doSheetsExport();
+        });
+      } else { await doSheetsExport(); }
+      return;
+    }
+    // المسار 3: CSV بديل (يعمل دائماً)
+    exportDataAsCSVZip();
+  }
+
+  async function sendToAppsScript() {
+    try {
+      const payload = {
+        action: 'save_all',
+        data: {
+          supervisionStudents,
+          supervisionTeachers,
+          dailyHoursLog,
+          quranStudentsList: quranStudentsList.map(s => ({ ...s })),
+          quranTeachersList
+        }
+      };
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      showToast('✅ تم إرسال البيانات إلى Google Drive بنجاح!');
+    } catch(e) {
+      showToast('⚠️ تعذّر الإرسال للـ Apps Script — تصدير CSV بدلاً منه');
+      exportDataAsCSVZip();
+    }
+  }
+
+  async function doSheetsExport() {
+    try {
+      const authInstance = gapi.auth2.getAuthInstance();
+      if (!authInstance.isSignedIn.get()) await authInstance.signIn();
+      showToast('📊 جارٍ إنشاء ملف Google Sheets...');
+      const title = `مداد العربية AI — بيانات ${new Date().toLocaleDateString('ar-EG')}`;
+      const res = await gapi.client.sheets.spreadsheets.create({ properties: { title, locale: 'ar_SA' } });
+      const sid = res.result.spreadsheetId;
+      const sheets = buildSheetsData();
+      // إنشاء ورقات إضافية
+      await gapi.client.sheets.spreadsheets.batchUpdate({ spreadsheetId: sid, resource: { requests: sheets.slice(1).map((s,i) => ({ addSheet: { properties: { title: s.name, index: i+1 } } })) } });
+      // كتابة البيانات
+      const reqs = sheets.map(s => ({ range: `${s.name}!A1`, values: s.rows }));
+      await gapi.client.sheets.spreadsheets.values.batchUpdate({ spreadsheetId: sid, resource: { valueInputOption: 'RAW', data: reqs } });
+      window.open(`https://docs.google.com/spreadsheets/d/${sid}`, '_blank');
+      showToast('✅ تم الإنشاء! فُتح الملف في تبويب جديد');
+    } catch(e) { showToast('❌ فشل الاتصال بـ Google Sheets'); console.error(e); }
+  }
+
+  // تصدير CSV بديل (بدون Google API)
+  function exportDataAsCSVZip() {
+    const sheets = buildSheetsData();
+    sheets.forEach(s => {
+      const csv = s.rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+      const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `مداد_${s.name}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    showToast('✅ تم تصدير ملفات CSV — افتحها من Excel');
+  }
+
+  function buildSheetsData() {
+    // ورقة 1: الطلاب والمتابعة
+    const studRows = [['اسم الطالب','المعلم المسؤول','المستهدف شهرياً','الحصص المكتملة','المستوى/المادة','الملاحظات']];
+    supervisionStudents.forEach(st => {
+      const t = supervisionTeachers.find(x => x.id === st.teacherId);
+      const done = st.sessions.filter(s => s.status === 'completed').length;
+      studRows.push([st.name, t?.name||'', st.target, done, st.level, st.notes]);
+    });
+    // ورقة 2: المعلمون والرواتب
+    const teachRows = [['اسم المعلم','البريد الإلكتروني','الهاتف','سعر الجلسة ($)']];
+    supervisionTeachers.forEach(t => teachRows.push([t.name, t.email, t.phone||'', t.rate]));
+    // ورقة 3: طلاب القرآن
+    const qRows = [['اسم الطالب الحافظ','المعلم','الحفظ الجديد','تقييم الحفظ','موضع المراجعة','تقييم المراجعة']];
+    quranStudentsList.forEach(s => {
+      const t = quranTeachersList.find(x => x.id === s.teacherId);
+      qRows.push([s.name, t?.name||'', s.newSave, s.newGrade, s.reviewStop, s.reviewGrade]);
+    });
+    // ورقة 4: سجل الساعات
+    const hrRows = [['المعلم','التاريخ','الساعات','نوع الدوام','الملاحظات']];
+    dailyHoursLog.forEach(e => {
+      const t = supervisionTeachers.find(x => x.id === e.teacherId);
+      hrRows.push([t?.name||'', e.date, e.hours, e.shift, e.notes||'']);
+    });
+    return [
+      { name: 'متابعة الطلاب', rows: studRows },
+      { name: 'المعلمون والرواتب', rows: teachRows },
+      { name: 'طلاب القرآن', rows: qRows },
+      { name: 'سجل الساعات', rows: hrRows }
+    ];
+  }
+
+  // ===== تهيئة التطبيق (يُستدعى بعد نجاح تسجيل الدخول) =====
+function initApp() {
+  // محاولة استرجاع البيانات المحفوظة محلياً أولاً
+  loadFromLocalCache();
+
+  renderCurricula(); renderQuranAll();
+    renderCurricula(); renderQuranAll();
+    const firstTab = document.querySelectorAll('#quranRoleTabsContainer .role-btn')[0];
+    if (firstTab) switchQuranRole('teacher1', firstTab);
+    const motEl = document.getElementById('dailyMotivation');
+    if (motEl) motEl.textContent = quranMotivations[Math.floor(Math.random()*quranMotivations.length)];
+    recomputeGlobalMaxSessions(); refreshAllTrackingViews();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // إذا لم يكن Firebase مضبوطاً، شغّل التطبيق مباشرة للعرض فقط
+    if (!firebaseReady) {
+      document.getElementById('loginGate').style.display = 'flex';
+      // أضف زر دخول تجريبي
+      const notice = document.getElementById('firebaseNotice');
+      if (notice) notice.innerHTML += '<br><button onclick="demoEnterApp()" style="background:var(--gold);color:#1A1D1C;border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;">⚡ دخول تجريبي (بدون حساب)</button>';
+    }
+    // ضبط Enter للإرسال
+    document.getElementById('loginPassword')?.addEventListener('keydown', e => { if(e.key==='Enter') loginUser(); });
+    document.getElementById('regConfirm')?.addEventListener('keydown', e => { if(e.key==='Enter') registerUser(); });
+  });
+
+  function demoEnterApp() {
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('appContainer').classList.add('app-visible');
+    document.getElementById('navUserName').textContent = 'وضع العرض';
+    document.getElementById('navInstituteName').textContent = 'مداد العربية AI';
+    document.getElementById('navUserAvatar').textContent = '👤';
+    initApp();
+    handleHashNavigation();
+  }
+  // ===== دالة التنبيهات المرئية المطورة (Advanced Toasts) =====
+let toastTimer = null;
+function showNotification(message, type = 'success') {
+  let container = document.getElementById('madadToastGlobal');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'madadToastGlobal';
+    container.className = 'madad-toast-container';
+    document.body.appendChild(container);
+  }
+  
+  let icon = '✅';
+  if (type === 'error') icon = '❌';
+  if (type === 'warn') icon = '⚠️';
+  if (type === 'info') icon = 'ℹ️';
+
+  container.className = `madad-toast-container show ${type}`;
+  container.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+  
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    container.classList.remove('show');
+  }, 4000);
+}
+// ===== دالة تشغيل الجولة التعريفية للمستخدمين =====
+function startOnboardingTour() {
+  introJs().setOptions({
+    steps: [
+      {
+        element: document.querySelector('.sidebar-header'),
+        title: 'مرحباً بك في مداد العربية AI',
+        intro: 'نظام التشغيل المؤسسي المتكامل لإدارة المعاهد وأكاديميات تعليم العربية والقرآن الكريم.',
+        position: 'right'
+      },
+      {
+        element: document.querySelector('.mega-assistant'),
+        title: 'مساعد مداد الذكي',
+        intro: 'اسأل المحرك الذكي أي سؤال إداري أو أكاديمي وسيحلل لك بيانات المؤسسة فوراً.',
+        position: 'bottom'
+      },
+      {
+        element: document.querySelector('.quick-portal-grid'),
+        title: 'البوابات الأساسية',
+        intro: 'وصول سريع ومباشر لبوابة الطلاب، المعلمين، استوديو المناهج، وقسم القرآن الكريم.',
+        position: 'top'
+      },
+      {
+        element: document.getElementById('sheetsExportBtn'),
+        title: 'التصدير السحابي والتقارير',
+        intro: 'يمكنك بضغطة زر واحدة تصدير بيانات المؤسسة إلى Google Sheets أو ملفات الإكسل.',
+        position: 'left'
+      }
+    ],
+    nextLabel: 'التالي ‹',
+    prevLabel: '› السابق',
+    doneLabel: 'إنهاء الجولة ✨',
+    showProgress: true,
+    exitOnOverlayClick: false
+  }).start();
+}
+
+// تشغيل الجولة تلقائياً للمستخدم الجديد لأول مرة
+window.addEventListener('DOMContentLoaded', () => {
+  if (!localStorage.getItem('madad_tour_completed')) {
+    setTimeout(() => {
+      startOnboardingTour();
+      localStorage.setItem('madad_tour_completed', 'true');
+    }, 1500);
+  }
+});
+</script>
+</body>
+</html>
